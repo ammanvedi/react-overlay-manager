@@ -1,12 +1,14 @@
 {
   "include": ["src/**/*"],
-  "exclude": ["src/test/**/*"],
+  "exclude": ["src/test/**/*", "src/stories/**/*"],
   "compilerOptions": {
+    "esModuleInterop": true,
+    "jsx": "react",
     "outDir": "dist",
     "module": "CommonJS",
     "declaration": true,
     "target": "es5",
-    "lib": ["es2015"],
+    "lib": ["es2015", "dom"],
     "strict": true,
     "sourceMap": true,
     "declarationMap": true
