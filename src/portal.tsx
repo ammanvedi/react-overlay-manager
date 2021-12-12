@@ -1,8 +1,8 @@
 import { createPortal } from 'react-dom';
 import React, { useLayoutEffect, useContext, useRef } from 'react';
 import { DEFAULT_PORTAL_WRAPPER_TAG } from './constants';
-import { createElementWithId } from './dom';
-import { logWarn } from './log';
+import { addStyles, createElementWithId } from './dom-helpers';
+import * as Styles from './styles';
 
 interface OverlayPortalProps {
     id: string;
@@ -15,7 +15,10 @@ export const OverlayPortal: React.FC<OverlayPortalProps> = ({
     reassignRoot,
 }) => {
     const portalWrapper = useRef<HTMLElement>(
-        createElementWithId(DEFAULT_PORTAL_WRAPPER_TAG, id),
+        addStyles(
+            createElementWithId(DEFAULT_PORTAL_WRAPPER_TAG, id),
+            Styles.WrapperOverlay,
+        ),
     );
 
     useLayoutEffect(() => {
