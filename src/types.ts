@@ -7,10 +7,37 @@ export interface SafeAreaRect {
     };
 }
 
+export type OverlayId = string;
+
 export type OverlayContextType = {
     safeArea: SafeAreaRect | null;
-    getRootForPosition: (position: OverlayPosition) => null | HTMLElement;
+    registerOverlay: (o: OverlayCreationRecord) => HTMLElement;
+    unregisterOverlay: (
+        position: OverlayRecord['position'],
+        id: OverlayRecord['id'],
+    ) => void;
+    updateOverlayRect: (id: OverlayId, rect: DOMRect) => void;
 };
+
+export interface OverlayCreationRecord {
+    position: OverlayPosition;
+    priority: number;
+    id: OverlayId;
+}
+
+export interface Translation {
+    x: number;
+    y: number;
+}
+
+export interface OverlayRecord extends OverlayCreationRecord {
+    element: HTMLElement;
+    translation: Translation | null;
+    rect: DOMRect | null;
+}
+
+export type OverlayLayoutStore = Map<OverlayPosition, Array<OverlayId>>;
+export type OverlayStore = Map<OverlayId, OverlayRecord>;
 
 export enum OverlayPosition {
     TOP_FULL_WIDTH = 'TOP_FULL_WIDTH',
@@ -22,3 +49,96 @@ export enum OverlayPosition {
     BOTTOM_CENTER = 'BOTTOM_CENTER',
     BOTTOM_RIGHT = 'BOTTOM_RIGHT',
 }
+
+export enum OverlayError {
+    OVERLAY_EXISTS_ALREADY = 'OVERLAY_EXISTS_ALREADY',
+}
+
+enum RemovalSuggestionReason {
+    TIMEOUT = 'TIMEOUT',
+    OVERLAP = 'OVERLAP',
+}
+
+enum LayoutDifferentialType {
+    REMOVED = 'REMOVED',
+    ADDED = 'ADDED',
+    MOVED = 'MOVED',
+    SUGGEST_REMOVAL = 'SUGGEST_REMOVAL',
+}
+
+export interface DifferentialRemoval {
+    type: LayoutDifferentialType.REMOVED;
+}
+
+export interface DifferentialAddition {
+    type: LayoutDifferentialType.ADDED;
+}
+
+export interface DifferentialMoved {
+    type: LayoutDifferentialType.MOVED;
+}
+
+export interface DifferentialSuggestRemoval {
+    type: LayoutDifferentialType.SUGGEST_REMOVAL;
+    reason: RemovalSuggestionReason;
+}
+
+export type LayoutDifferential =
+    | DifferentialSuggestRemoval
+    | DifferentialAddition
+    | DifferentialMoved
+    | DifferentialRemoval;
+
+export type OverlayDifferential = Record<
+    LayoutDifferentialType,
+    LayoutDifferential
+>;
+
+export interface LayoutCalculationResult {
+    overlaysState: OverlayLayoutStore;
+    diff: Map<OverlayId, OverlayDifferential>;
+}
+
+export interface AxisPositionerResult {
+    offset: number;
+    additionalOffset: number;
+}
+
+/**
+ * Any transform is considered to start at the top left position of
+ * the given element. That is transform-origin is assumed 0 0
+ */
+export type Coord2D = { x: number; y: number };
+
+export interface MultiAxisPositionerResult {
+    offset: Coord2D;
+    additionalOffset: Coord2D;
+}
+
+export type VerticalPositionerFunction = (
+    initialOffset: number,
+    containerRect: DOMRect,
+    elementRect: DOMRect,
+) => AxisPositionerResult;
+
+export type HorizontalPositionerFunction = (
+    initialOffset: number,
+    containerRect: DOMRect,
+    elementRect: DOMRect,
+) => AxisPositionerResult;
+
+export interface PositionerFunctionPair {
+    horizontal: HorizontalPositionerFunction;
+    vertical: VerticalPositionerFunction;
+}
+
+export type PositionerFunctions = Record<
+    OverlayPosition,
+    PositionerFunctionPair
+>;
+
+export type PositionerFunction = (
+    initialOffset: number,
+    containerRect: DOMRect,
+    elementRect: DOMRect,
+) => MultiAxisPositionerResult;

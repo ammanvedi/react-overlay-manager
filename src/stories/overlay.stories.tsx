@@ -1,40 +1,115 @@
 import React from 'react';
 import { ComponentMeta } from '@storybook/react';
 import { OverlayContextProvider } from '../overlay-context';
-import { ManagedOverlay } from '../managed-overlay';
 import { OverlayPosition } from '../types';
+import { OverlayProps, Overlay } from '../overlay';
 
 export default {
     title: 'Overlay Manager',
     component: OverlayContextProvider,
 } as ComponentMeta<any>;
 
+const mockOverlays: Array<OverlayProps> = [
+    {
+        id: 'a',
+        position: OverlayPosition.TOP_FULL_WIDTH,
+        priority: 1,
+    },
+    {
+        id: 'b',
+        position: OverlayPosition.TOP_FULL_WIDTH,
+        priority: 1,
+    },
+    {
+        id: 'c',
+        position: OverlayPosition.TOP_LEFT,
+        priority: 1,
+    },
+    {
+        id: 'd',
+        position: OverlayPosition.TOP_LEFT,
+        priority: 1,
+    },
+    {
+        id: 'e',
+        position: OverlayPosition.TOP_CENTER,
+        priority: 1,
+    },
+    {
+        id: 'f',
+        position: OverlayPosition.TOP_CENTER,
+        priority: 1,
+    },
+    {
+        id: 'g',
+        position: OverlayPosition.TOP_RIGHT,
+        priority: 1,
+    },
+    {
+        id: 'h',
+        position: OverlayPosition.TOP_RIGHT,
+        priority: 1,
+    },
+    // bottom
+
+    {
+        id: 'i',
+        position: OverlayPosition.BOTTOM_FULL_WIDTH,
+        priority: 1,
+    },
+    {
+        id: 'j',
+        position: OverlayPosition.BOTTOM_FULL_WIDTH,
+        priority: 1,
+    },
+    {
+        id: 'k',
+        position: OverlayPosition.BOTTOM_LEFT,
+        priority: 1,
+    },
+    {
+        id: 'l',
+        position: OverlayPosition.BOTTOM_LEFT,
+        priority: 1,
+    },
+    {
+        id: 'm',
+        position: OverlayPosition.BOTTOM_CENTER,
+        priority: 1,
+    },
+    {
+        id: 'n',
+        position: OverlayPosition.BOTTOM_CENTER,
+        priority: 1,
+    },
+    {
+        id: 'o',
+        position: OverlayPosition.BOTTOM_RIGHT,
+        priority: 1,
+    },
+    {
+        id: 'p',
+        position: OverlayPosition.BOTTOM_RIGHT,
+        priority: 1,
+    },
+];
+
 const boxStyles: React.CSSProperties = {
-    width: '100px',
-    height: '100px',
-    backgroundColor: 'blue',
-    margin: '0',
+    width: 200,
+    height: 100,
+    margin: 10,
+    backgroundColor: 'pink',
 };
 
 export const Default = () => {
     return (
         <OverlayContextProvider>
             <div>Page Content</div>
-            <ManagedOverlay position={OverlayPosition.TOP_RIGHT} id="1s">
-                <div style={boxStyles}>Overlay One</div>
-            </ManagedOverlay>
-            <ManagedOverlay position={OverlayPosition.BOTTOM_CENTER} id="1s2">
-                <div style={boxStyles}>Overlay One</div>
-            </ManagedOverlay>
-            <ManagedOverlay position={OverlayPosition.BOTTOM_RIGHT} id="1sdf">
-                <div style={boxStyles}>Overlay One</div>
-            </ManagedOverlay>
-            <ManagedOverlay position={OverlayPosition.BOTTOM_LEFT} id="2">
-                <div style={boxStyles}>Overlay Two</div>
-            </ManagedOverlay>
-            <ManagedOverlay position={OverlayPosition.BOTTOM_LEFT} id="2dffdss">
-                <div style={boxStyles}>Overlay Two</div>
-            </ManagedOverlay>
+            {mockOverlays.map((o) => (
+                <Overlay key={o.id} {...o}>
+                    <div style={boxStyles}>Overlay :: {o.id}</div>
+                </Overlay>
+            ))}
         </OverlayContextProvider>
     );
 };
