@@ -1,3 +1,4 @@
+// @ts-ignore
 import React from 'react';
 import { ComponentMeta } from '@storybook/react';
 import { OverlayContextProvider } from '../overlay-context';
@@ -92,11 +93,16 @@ const mockOverlays: Array<OverlayProps> = [
         position: OverlayPosition.BOTTOM_RIGHT,
         priority: 1,
     },
+    {
+        id: 'q',
+        position: OverlayPosition.BOTTOM_RIGHT,
+        priority: 1,
+    },
 ];
 
 const boxStyles: React.CSSProperties = {
     width: 200,
-    height: 100,
+    height: 20,
     margin: 10,
     backgroundColor: 'pink',
 };

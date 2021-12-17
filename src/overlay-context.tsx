@@ -1,29 +1,29 @@
-import React, {
-    createContext,
-    useCallback,
-    useLayoutEffect,
-    useRef,
-} from 'react';
-import * as Styles from './styles';
+import React, { createContext, useCallback, useRef, useEffect } from 'react';
 import {
     OverlayContextType,
     OverlayError,
     OverlayId,
     OverlayLayoutStore,
-    OverlayPosition,
     OverlayRecord,
     OverlayStore,
 } from './types';
 import {
+    BASE_LAYOUT,
     DEFAULT_PORTAL_WRAPPER_ID,
     DEFAULT_PORTAL_WRAPPER_TAG,
+    DEFAULT_RESPONSIVE_RULES,
 } from './constants';
-import { createElement } from './helper/dom';
-import debounce from 'lodash.debounce';
 import {
-    calculateLayout,
-    insertOverlayIntoList,
+    addToBodyAndRemoveOld,
+    createElementWithId,
+    createElementWithInnerHTML,
+    getContainerForPosition,
+} from './helper/dom';
+import throttle from 'lodash.throttle';
+import {
+    getNewLayoutStore,
     overlayExists,
+    putOverlaysInContainers,
     removeOverlayFromList,
 } from './helper/layout';
 
@@ -46,40 +46,17 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
     children,
     rootId = DEFAULT_PORTAL_WRAPPER_ID,
 }) => {
-    const { current: overlayLayoutStore } = useRef<OverlayLayoutStore>(
-        new Map(Object.values(OverlayPosition).map((op) => [op, []])),
+    const overlayLayoutStoreRef = useRef<OverlayLayoutStore>(
+        getNewLayoutStore(),
     );
+    const { current: overlayLayoutStore } = overlayLayoutStoreRef;
     const { current: overlayStore } = useRef<OverlayStore>(new Map());
     const { current: elementRef } = useRef(
-        createElement('div', rootId, Styles.Wrapper),
+        addToBodyAndRemoveOld(
+            createElementWithInnerHTML('div', rootId, BASE_LAYOUT),
+            rootId,
+        ),
     );
-
-    useLayoutEffect(() => {
-        const oldRoot = document.getElementById(rootId);
-
-        if (oldRoot) {
-            oldRoot.remove();
-        }
-        /**
-         * Actually add the elements to the dom. We append them so that in most
-         * cases there is a reasonable chance we can overlay all the items on top of
-         * the ui without needing any css tricks.
-         */
-        document.body.appendChild(elementRef);
-
-        /**
-         * TODO
-         *
-         * run example in storybook
-         * see if it works
-         * add resize observer to each entity and add functions to pass client rect up tree
-         * work out how to calculate the safe area
-         * add ability to add a defined z index
-         * work out how to position the elements properly in order of defined y? index
-         * define what the safe area actually is
-         *  - is it a polygon, or is it a box, what if elements have different widths
-         */
-    }, []);
 
     const registerOverlay: OverlayContextType['registerOverlay'] = useCallback(
         (overlay) => {
@@ -97,10 +74,9 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
              * move it into another container for the purposes of styling and to keep
              * the DOM neat
              */
-            const portalContainerForOverlay = createElement(
+            const portalContainerForOverlay = createElementWithId(
                 DEFAULT_PORTAL_WRAPPER_TAG,
                 overlay.id,
-                Styles.WrapperOverlay,
             );
 
             const overlayRecord: OverlayRecord = {
@@ -111,24 +87,6 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
             };
 
             overlayStore.set(overlay.id, overlayRecord);
-
-            /**
-             * Insert the id into the correct position in the layout
-             */
-            console.log('inserting', overlay.id, 'into', overlay.position);
-            overlayLayoutStore.set(
-                overlay.position,
-                insertOverlayIntoList(
-                    overlayRecord,
-                    overlayLayoutStore.get(
-                        overlay.position,
-                    ) as Array<OverlayId>,
-                    overlayStore,
-                ),
-            );
-
-            elementRef.append(portalContainerForOverlay);
-
             return portalContainerForOverlay;
         },
         [],
@@ -150,19 +108,34 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
         }, []);
 
     const recalculateLayout = useCallback(
-        debounce(() => {
-            console.log('Will calculate Layout');
-            console.log(overlayLayoutStore);
-            console.log(overlayStore);
-            const recalculationResult = calculateLayout(
-                elementRef.getBoundingClientRect(),
-                overlayLayoutStore,
-                overlayStore,
-            );
-            console.log(recalculationResult);
-        }, 500),
+        throttle(
+            () => {
+                overlayLayoutStoreRef.current = putOverlaysInContainers(
+                    overlayStore,
+                    DEFAULT_RESPONSIVE_RULES,
+                    (id, position) => {
+                        const container = getContainerForPosition(position);
+                        const overlay = overlayStore.get(id);
+                        if (container && overlay) {
+                            container.appendChild(overlay.element);
+                        }
+                    },
+                );
+            },
+            1000,
+            { leading: true, trailing: true },
+        ),
         [],
     );
+
+    useEffect(() => {
+        const onResize = () => recalculateLayout();
+        window.addEventListener('resize', onResize);
+
+        return () => {
+            window.removeEventListener('resize', onResize);
+        };
+    }, []);
 
     const updateOverlayRect: OverlayContextType['updateOverlayRect'] =
         useCallback((id, rect) => {

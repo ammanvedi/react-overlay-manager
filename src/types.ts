@@ -89,56 +89,6 @@ export type LayoutDifferential =
     | DifferentialMoved
     | DifferentialRemoval;
 
-export type OverlayDifferential = Record<
-    LayoutDifferentialType,
-    LayoutDifferential
->;
+export type MatchMediaRecord = Record<string, OverlayPosition>;
 
-export interface LayoutCalculationResult {
-    overlaysState: OverlayLayoutStore;
-    diff: Map<OverlayId, OverlayDifferential>;
-}
-
-export interface AxisPositionerResult {
-    offset: number;
-    additionalOffset: number;
-}
-
-/**
- * Any transform is considered to start at the top left position of
- * the given element. That is transform-origin is assumed 0 0
- */
-export type Coord2D = { x: number; y: number };
-
-export interface MultiAxisPositionerResult {
-    offset: Coord2D;
-    additionalOffset: Coord2D;
-}
-
-export type VerticalPositionerFunction = (
-    initialOffset: number,
-    containerRect: DOMRect,
-    elementRect: DOMRect,
-) => AxisPositionerResult;
-
-export type HorizontalPositionerFunction = (
-    initialOffset: number,
-    containerRect: DOMRect,
-    elementRect: DOMRect,
-) => AxisPositionerResult;
-
-export interface PositionerFunctionPair {
-    horizontal: HorizontalPositionerFunction;
-    vertical: VerticalPositionerFunction;
-}
-
-export type PositionerFunctions = Record<
-    OverlayPosition,
-    PositionerFunctionPair
->;
-
-export type PositionerFunction = (
-    initialOffset: number,
-    containerRect: DOMRect,
-    elementRect: DOMRect,
-) => MultiAxisPositionerResult;
+export type ResponsiveRules = Record<OverlayPosition, MatchMediaRecord | null>;
