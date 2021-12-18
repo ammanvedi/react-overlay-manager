@@ -177,7 +177,6 @@ export const getInsets = (insetStore: OverlaySideInsetStore): InsetRect => {
                 result[side] += insetValue + extraPaddingPx;
                 break;
             case 'object':
-                console.log(insetValue);
                 result[side] += insetValue
                     ? getInsetFromRef(insetValue, side, extraPaddingPx)
                     : 0;

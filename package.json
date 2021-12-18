@@ -1,12 +1,12 @@
 {
-  "name": "update-package-name",
-  "author": "UPDATE-you@email.com",
+  "name": "react-overlay-manager",
+  "author": "amman.vedi@gmail.com",
   "keywords": [
-    "UPDATE"
+    "react", "overlay", "safe area"
   ],
-  "license": "UPDATE",
+  "license": "MIT",
   "version": "1.0.0",
-  "description": "Description",
+  "description": "Position overlays over your application in a declarative manner",
   "scripts": {
     "test": "./node_modules/.bin/jest",
     "build": "./node_modules/.bin/tsc",
