@@ -2,7 +2,7 @@ import { css } from './styles';
 import { OverlayPosition, ResponsiveRules } from './types';
 
 export const DEFAULT_PORTAL_WRAPPER_ID = 'rom-portal';
-export const ID_MAP: Record<OverlayPosition, string> = {
+export const ID_MAP: Record<OverlayPosition | 'container', string> = {
     [OverlayPosition.TOP_CENTER]: `${DEFAULT_PORTAL_WRAPPER_ID}_top_center`,
     [OverlayPosition.TOP_FULL_WIDTH]: `${DEFAULT_PORTAL_WRAPPER_ID}_top_full_width`,
     [OverlayPosition.TOP_LEFT]: `${DEFAULT_PORTAL_WRAPPER_ID}_top_left`,
@@ -11,6 +11,7 @@ export const ID_MAP: Record<OverlayPosition, string> = {
     [OverlayPosition.BOTTOM_FULL_WIDTH]: `${DEFAULT_PORTAL_WRAPPER_ID}_bottom_full_width`,
     [OverlayPosition.BOTTOM_LEFT]: `${DEFAULT_PORTAL_WRAPPER_ID}_bottom_left`,
     [OverlayPosition.BOTTOM_RIGHT]: `${DEFAULT_PORTAL_WRAPPER_ID}_bottom_right`,
+    container: `${DEFAULT_PORTAL_WRAPPER_ID}_container`,
 };
 
 export const DEFAULT_PORTAL_WRAPPER_TAG: keyof HTMLElementTagNameMap = 'div';
@@ -19,6 +20,7 @@ export const BASE_CSS = css`
     .overlay {
         position: fixed;
         inset: 0;
+        transition: 0.2s ease-out inset;
     }
 
     .wrapper {
@@ -107,7 +109,7 @@ export const BASE_CSS = css`
 `;
 
 export const BASE_LAYOUT = `
-    <div class="overlay">
+    <div class="overlay" id="${ID_MAP.container}">
         <style>${BASE_CSS}</style>
         <div class="wrapper wrapper--top">
           <div class="full" id="${ID_MAP.TOP_FULL_WIDTH}">

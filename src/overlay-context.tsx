@@ -5,6 +5,7 @@ import {
     OverlayId,
     OverlayLayoutStore,
     OverlayRecord,
+    OverlaySideInsetStore,
     OverlayStore,
 } from './types';
 import {
@@ -12,6 +13,7 @@ import {
     DEFAULT_PORTAL_WRAPPER_ID,
     DEFAULT_PORTAL_WRAPPER_TAG,
     DEFAULT_RESPONSIVE_RULES,
+    ID_MAP,
 } from './constants';
 import {
     addToBodyAndRemoveOld,
@@ -20,7 +22,11 @@ import {
     getContainerForPosition,
 } from './helper/dom';
 import throttle from 'lodash.throttle';
+import debounce from 'lodash.debounce';
 import {
+    applyInsets,
+    getInsets,
+    getNewInsetStore,
     getNewLayoutStore,
     overlayExists,
     putOverlaysInContainers,
@@ -31,6 +37,9 @@ const overlayContextDefaultValue: OverlayContextType = Object.freeze({
     unregisterOverlay: () => null,
     registerOverlay: () => document.createElement('div'),
     updateOverlayRect: () => null,
+    removeInset: () => null,
+    setInset: () => null,
+    recalculateInsets: () => null,
     safeArea: null,
 });
 
@@ -46,8 +55,21 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
     children,
     rootId = DEFAULT_PORTAL_WRAPPER_ID,
 }) => {
+    /**
+     * TODO
+     *
+     * All of this logic is essentially just functions updating the
+     * values of instance variables (refs) we could throw this all in a
+     * class and just instance that.
+     *
+     * It might be easier to read as i think alot of the useref and
+     * usecallback is actually a layer of indirection we maybe dont need
+     */
     const overlayLayoutStoreRef = useRef<OverlayLayoutStore>(
         getNewLayoutStore(),
+    );
+    const { current: overlaySideInsetStore } = useRef<OverlaySideInsetStore>(
+        getNewInsetStore(),
     );
     const { current: overlayLayoutStore } = overlayLayoutStoreRef;
     const { current: overlayStore } = useRef<OverlayStore>(new Map());
@@ -56,6 +78,9 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
             createElementWithInnerHTML('div', rootId, BASE_LAYOUT),
             rootId,
         ),
+    );
+    const { current: containerRef } = useRef<HTMLElement>(
+        document.getElementById(ID_MAP.container),
     );
 
     const registerOverlay: OverlayContextType['registerOverlay'] = useCallback(
@@ -128,8 +153,37 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
         [],
     );
 
+    const recalculateInsets = useCallback(
+        debounce(
+            () => {
+                if (containerRef) {
+                    const newInsets = getInsets(overlaySideInsetStore);
+                    applyInsets(containerRef, newInsets);
+                }
+            },
+            300,
+            { leading: true, trailing: true },
+        ),
+        [],
+    );
+
+    const setInset: OverlayContextType['setInset'] = useCallback((inset) => {
+        overlaySideInsetStore.set(inset.id, inset);
+        recalculateInsets();
+    }, []);
+
+    const removeInset: OverlayContextType['removeInset'] = useCallback(
+        (insetId) => {
+            overlaySideInsetStore.delete(insetId);
+        },
+        [],
+    );
+
     useEffect(() => {
-        const onResize = () => recalculateLayout();
+        const onResize = () => {
+            recalculateLayout();
+            recalculateInsets();
+        };
         window.addEventListener('resize', onResize);
 
         return () => {
@@ -157,6 +211,9 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                 registerOverlay,
                 unregisterOverlay,
                 updateOverlayRect,
+                setInset,
+                removeInset,
+                recalculateInsets,
             }}
         >
             {children}

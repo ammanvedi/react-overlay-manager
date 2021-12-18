@@ -1,9 +1,12 @@
 import {
+    InsetRect,
     MatchMediaRecord,
     OverlayId,
     OverlayLayoutStore,
     OverlayPosition,
     OverlayRecord,
+    OverlaySide,
+    OverlaySideInsetStore,
     OverlayStore,
     ResponsiveRules,
 } from '../types';
@@ -65,6 +68,10 @@ export const getNewLayoutStore = (): OverlayLayoutStore =>
         ]),
     );
 
+export const getNewInsetStore = (): OverlaySideInsetStore => {
+    return new Map();
+};
+
 export const getPositionForMatchMedia = (
     record: MatchMediaRecord | null,
 ): OverlayPosition | null => {
@@ -125,4 +132,63 @@ export const putOverlaysInContainers = (
     });
 
     return result;
+};
+
+export const getInsetFromRef = (
+    ref: HTMLElement,
+    side: OverlaySide,
+    extraPadding: number,
+): number => {
+    const rect = ref.getBoundingClientRect();
+
+    let result = 0;
+    switch (side) {
+        case OverlaySide.BOTTOM:
+            result = rect.bottom + rect.height;
+            break;
+        case OverlaySide.LEFT:
+            result = rect.left + rect.width;
+            break;
+        case OverlaySide.RIGHT:
+            result = rect.right + rect.width;
+            break;
+        case OverlaySide.TOP:
+            result = rect.top + rect.height;
+            break;
+    }
+
+    return result > 0 ? result + extraPadding : 0;
+};
+
+export const getInsets = (insetStore: OverlaySideInsetStore): InsetRect => {
+    const result: InsetRect = {
+        [OverlaySide.TOP]: 0,
+        [OverlaySide.BOTTOM]: 0,
+        [OverlaySide.LEFT]: 0,
+        [OverlaySide.RIGHT]: 0,
+    };
+
+    for (const [
+        _,
+        { insetValue, side, extraPaddingPx },
+    ] of insetStore.entries()) {
+        switch (typeof insetValue) {
+            case 'number':
+                result[side] += insetValue + extraPaddingPx;
+                break;
+            case 'object':
+                console.log(insetValue);
+                result[side] += insetValue
+                    ? getInsetFromRef(insetValue, side, extraPaddingPx)
+                    : 0;
+        }
+    }
+
+    return result;
+};
+
+export const applyInsets = (el: HTMLElement, insets: InsetRect) => {
+    el.style.inset = `${insets[OverlaySide.TOP]}px ${
+        insets[OverlaySide.RIGHT]
+    }px ${insets[OverlaySide.BOTTOM]}px ${insets[OverlaySide.LEFT]}px`;
 };

@@ -1,13 +1,16 @@
+export interface InsetRect {
+    [OverlaySide.TOP]: number;
+    [OverlaySide.BOTTOM]: number;
+    [OverlaySide.LEFT]: number;
+    [OverlaySide.RIGHT]: number;
+}
+
 export interface SafeAreaRect {
-    inset: {
-        top: number;
-        bottom: number;
-        left: number;
-        right: number;
-    };
+    inset: InsetRect;
 }
 
 export type OverlayId = string;
+export type InsetId = string;
 
 export type OverlayContextType = {
     safeArea: SafeAreaRect | null;
@@ -17,6 +20,9 @@ export type OverlayContextType = {
         id: OverlayRecord['id'],
     ) => void;
     updateOverlayRect: (id: OverlayId, rect: DOMRect) => void;
+    setInset: (inset: InsetRecord) => void;
+    removeInset: (insetId: InsetId) => void;
+    recalculateInsets: () => void;
 };
 
 export interface OverlayCreationRecord {
@@ -36,8 +42,16 @@ export interface OverlayRecord extends OverlayCreationRecord {
     rect: DOMRect | null;
 }
 
+export type InsetRecord = {
+    id: InsetId;
+    insetValue: number | HTMLElement | null;
+    extraPaddingPx: number;
+    side: OverlaySide;
+};
+
 export type OverlayLayoutStore = Map<OverlayPosition, Array<OverlayId>>;
 export type OverlayStore = Map<OverlayId, OverlayRecord>;
+export type OverlaySideInsetStore = Map<InsetId, InsetRecord>;
 
 export enum OverlayPosition {
     TOP_FULL_WIDTH = 'TOP_FULL_WIDTH',
@@ -48,6 +62,13 @@ export enum OverlayPosition {
     BOTTOM_LEFT = 'BOTTOM_LEFT',
     BOTTOM_CENTER = 'BOTTOM_CENTER',
     BOTTOM_RIGHT = 'BOTTOM_RIGHT',
+}
+
+export enum OverlaySide {
+    TOP = 'TOP',
+    RIGHT = 'RIGHT',
+    BOTTOM = 'BOTTOM',
+    LEFT = 'LEFT',
 }
 
 export enum OverlayError {
