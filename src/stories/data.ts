@@ -1,10 +1,53 @@
 import { OverlayProps } from '../overlay';
-import { OverlayId, OverlayPosition } from '../types';
+import { OverlayPosition } from '../types';
 
 type MoveAction = {
     type: 'move';
-    id: OverlayId;
+    index: number;
     destination: OverlayPosition;
+    priority: number;
+};
+
+type RandomAction = MoveAction;
+
+const randomValue = (min: number, max: number) => {
+    return Math.floor(Math.random() * (max - min) + min);
+};
+
+const positions: Array<OverlayPosition> = [
+    OverlayPosition.TOP_RIGHT,
+    OverlayPosition.TOP_LEFT,
+    OverlayPosition.TOP_CENTER,
+    OverlayPosition.TOP_FULL_WIDTH,
+    OverlayPosition.BOTTOM_CENTER,
+    OverlayPosition.BOTTOM_RIGHT,
+    OverlayPosition.BOTTOM_LEFT,
+    OverlayPosition.BOTTOM_FULL_WIDTH,
+];
+
+export const getRandomEvent = (maxOverlays: number): RandomAction => {
+    return {
+        type: 'move',
+        index: randomValue(0, maxOverlays),
+        destination: positions[randomValue(0, positions.length)],
+        priority: randomValue(0, 10),
+    };
+};
+
+export const applyRandomActionToOverlays = (
+    action: RandomAction,
+    overlays: Array<OverlayProps>,
+): Array<OverlayProps> => {
+    const result = [...overlays];
+    switch (action.type) {
+        case 'move':
+            result[action.index] = {
+                ...result[action.index],
+                position: action.destination,
+                priority: action.priority,
+            };
+            return result;
+    }
 };
 
 export const mockOverlays: Array<OverlayProps> = [

@@ -144,6 +144,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
 
     const recalculateLayout = useCallback(
         throttleWithPromiseBlocking(() => {
+            console.log('recalc');
             /**
              * First we place all divs into the correct containers
              */

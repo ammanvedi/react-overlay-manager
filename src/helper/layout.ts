@@ -216,6 +216,7 @@ export const throttleWithPromiseBlocking = <PROMISE_TYPE>(
 
         const internalFunc = () => {
             if (currentPromise) {
+                console.log('has current promise');
                 didCallWhenPromiseUnresolved = true;
                 return Promise.resolve();
             }

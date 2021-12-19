@@ -108,15 +108,11 @@ export const transitionProperty = (
 
     const resultPromise: Promise<void> = new Promise((res) => {
         const handler = () => {
-            console.log('transition ended', property, initial, target);
             res();
             el.removeEventListener('transitionend', handler);
         };
         el.addEventListener('transitionend', handler);
-        console.log('execute promise listener', property, initial, target);
     });
-
-    console.log('execute property change', property, initial, target);
 
     /**
      * Now hear me out on this one, the transitions dont seem to work so well

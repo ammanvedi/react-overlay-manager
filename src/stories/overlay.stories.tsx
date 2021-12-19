@@ -1,9 +1,13 @@
 // @ts-ignore
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { ComponentMeta } from '@storybook/react';
 import { OverlayContext, OverlayContextProvider } from '../overlay-context';
 import { Overlay } from '../overlay';
-import { mockOverlays } from './data';
+import {
+    applyRandomActionToOverlays,
+    getRandomEvent,
+    mockOverlays,
+} from './data';
 import { OverlayPosition, OverlaySide } from '../types';
 
 export default {
@@ -35,32 +39,42 @@ const Story = () => {
     useEffect(() => {
         window.addEventListener('scroll', recalculateInsets);
 
-        setTimeout(() => {
-            setOverlays((o) => {
-                o[2].position = OverlayPosition.TOP_RIGHT;
-                o[2].priority = 0;
-                return [...o];
-            });
-        }, 3000);
-
         return () => {
             window.removeEventListener('scroll', recalculateInsets);
         };
     }, []);
 
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setOverlays((o) => {
+                const action = getRandomEvent(overlays.length);
+                return applyRandomActionToOverlays(action, o);
+            });
+        }, 500);
+
+        return () => {
+            clearInterval(intervalId);
+        };
+    }, [overlays]);
+
+    /**
+     * TODO make a point that this ref callback needs to be
+     * memoized, otherwise it will get called more than it
+     * needs to be. Alternatively we should make a nicer
+     * way to handle these refs
+     */
+    const refCb = useCallback((ref) => {
+        setInset({
+            id: 'navigation',
+            insetValue: ref,
+            side: OverlaySide.TOP,
+            extraPaddingPx: 16,
+        });
+    }, []);
+
     return (
         <div style={pageStyles}>
-            <nav
-                ref={(ref) => {
-                    setInset({
-                        id: 'navigation',
-                        insetValue: ref,
-                        side: OverlaySide.TOP,
-                        extraPaddingPx: 16,
-                    });
-                }}
-                style={navStyles}
-            />
+            <nav ref={refCb} style={navStyles} />
             {overlays.map((o) => (
                 <Overlay key={o.id} {...o}>
                     <div style={boxStyles}>Overlay :: {o.id}</div>
