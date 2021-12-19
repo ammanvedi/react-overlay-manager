@@ -10,6 +10,7 @@ import {
     OverlayStore,
     ResponsiveRules,
 } from '../types';
+import throttle from 'lodash.throttle';
 
 /**
  * The main key assumption we can make here is that the
@@ -190,4 +191,47 @@ export const applyInsets = (el: HTMLElement, insets: InsetRect) => {
     el.style.inset = `${insets[OverlaySide.TOP]}px ${
         insets[OverlaySide.RIGHT]
     }px ${insets[OverlaySide.BOTTOM]}px ${insets[OverlaySide.LEFT]}px`;
+};
+
+/**
+ * The aim of this function is to take an input function and return a function
+ * that can only be called;
+ * 1. once every x milliseconds
+ * 2. cannot be called while the promise that the function returns is unsettled
+ */
+export const throttleWithPromiseBlocking = <
+    PARAMS extends Array<any>,
+    PROMISE_TYPE,
+>(
+    fn: (...args: PARAMS) => Promise<PROMISE_TYPE>,
+    throttleInterval: number,
+): ((...args: PARAMS) => Promise<PROMISE_TYPE>) => {
+    return (() => {
+        let currentPromise: Promise<PROMISE_TYPE> | null = null;
+        let didCallWhenPromiseUnresolved = false;
+
+        const internalFunc = () => {
+            console.log(currentPromise, didCallWhenPromiseUnresolved);
+            if (currentPromise) {
+                didCallWhenPromiseUnresolved = true;
+                return Promise.resolve();
+            }
+
+            currentPromise = fn().then(() => {
+                console.log('did resolve');
+                currentPromise = null;
+                if (didCallWhenPromiseUnresolved) {
+                    didCallWhenPromiseUnresolved = false;
+                    currentPromise = fn();
+                }
+            });
+
+            return currentPromise;
+        };
+
+        return throttle(internalFunc, throttleInterval, {
+            trailing: true,
+            leading: false,
+        });
+    })();
 };

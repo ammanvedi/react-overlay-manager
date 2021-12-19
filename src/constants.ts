@@ -1,6 +1,7 @@
 import { css } from './styles';
 import { OverlayPosition, ResponsiveRules } from './types';
 
+export const DATA_MOUNTED = 'data-mounted';
 export const DEFAULT_PORTAL_WRAPPER_ID = 'rom-portal';
 export const ID_MAP: Record<OverlayPosition | 'container', string> = {
     [OverlayPosition.TOP_CENTER]: `${DEFAULT_PORTAL_WRAPPER_ID}_top_center`,
@@ -58,16 +59,11 @@ export const BASE_CSS = css`
         align-self: flex-start;
     }
 
-    .left > * {
-        display: inline-block;
-    }
-
     .right {
         justify-self: flex-end;
     }
 
-    .right > * {
-        display: inline-block;
+    .right > .overlay-wrapper {
         transform: translateX(-100%);
     }
 
@@ -75,8 +71,7 @@ export const BASE_CSS = css`
         justify-self: center;
     }
 
-    .center > * {
-        display: inline-block;
+    .center > .overlay-wrapper {
         transform: translateX(-50%);
     }
 
@@ -105,6 +100,11 @@ export const BASE_CSS = css`
 
     .box--full {
         width: 100%;
+    }
+
+    .overlay-wrapper {
+        opacity: 0;
+        transition: 0.2s ease-out height, 0.2s ease-out opacity;
     }
 `;
 

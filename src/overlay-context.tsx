@@ -4,6 +4,7 @@ import {
     OverlayError,
     OverlayId,
     OverlayLayoutStore,
+    OverlayPosition,
     OverlayRecord,
     OverlaySideInsetStore,
     OverlayStore,
@@ -17,6 +18,8 @@ import {
 } from './constants';
 import {
     addToBodyAndRemoveOld,
+    animateElementIn,
+    animateElementOut,
     createElementWithId,
     createElementWithInnerHTML,
     getContainerForPosition,
@@ -31,6 +34,7 @@ import {
     overlayExists,
     putOverlaysInContainers,
     removeOverlayFromList,
+    throttleWithPromiseBlocking,
 } from './helper/layout';
 
 const overlayContextDefaultValue: OverlayContextType = Object.freeze({
@@ -102,16 +106,19 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
             const portalContainerForOverlay = createElementWithId(
                 DEFAULT_PORTAL_WRAPPER_TAG,
                 overlay.id,
+                'overlay-wrapper',
             );
 
             const overlayRecord: OverlayRecord = {
                 ...overlay,
+                currentMountedPosition: null,
                 element: portalContainerForOverlay,
                 rect: null,
                 translation: null,
             };
 
             overlayStore.set(overlay.id, overlayRecord);
+            recalculateLayout();
             return portalContainerForOverlay;
         },
         [],
@@ -133,23 +140,67 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
         }, []);
 
     const recalculateLayout = useCallback(
-        throttle(
-            () => {
-                overlayLayoutStoreRef.current = putOverlaysInContainers(
-                    overlayStore,
-                    DEFAULT_RESPONSIVE_RULES,
-                    (id, position) => {
-                        const container = getContainerForPosition(position);
-                        const overlay = overlayStore.get(id);
-                        if (container && overlay) {
+        throttleWithPromiseBlocking(() => {
+            console.log('recal;culate');
+            /**
+             * First we place all divs into the correct containers
+             */
+            const animationPromises: Array<Promise<void>> = [];
+            overlayLayoutStoreRef.current = putOverlaysInContainers(
+                overlayStore,
+                DEFAULT_RESPONSIVE_RULES,
+                (id: OverlayId, position: OverlayPosition) => {
+                    const container = getContainerForPosition(position);
+                    const overlay = overlayStore.get(id);
+
+                    if (!container || !overlay) {
+                        return;
+                    }
+
+                    /**
+                     * If the mount point is going to change then animate the
+                     * element out
+                     */
+                    const hasBeenMountedToDom =
+                        overlay.currentMountedPosition !== null;
+
+                    if (!hasBeenMountedToDom) {
+                        container.appendChild(overlay.element);
+                    }
+
+                    const mountPointChanged =
+                        overlay.currentMountedPosition !== position;
+
+                    if (mountPointChanged) {
+                        if (overlay.currentMountedPosition === null) {
+                            overlay.currentMountedPosition = position;
                             container.appendChild(overlay.element);
+                            animationPromises.push(
+                                animateElementIn(overlay.element),
+                            );
+                        } else {
+                            animationPromises.push(
+                                animateElementOut(overlay.element)
+                                    .then(() => {
+                                        overlay.currentMountedPosition =
+                                            position;
+                                        container.appendChild(overlay.element);
+                                    })
+                                    .then(() =>
+                                        animateElementIn(overlay.element),
+                                    ),
+                            );
                         }
-                    },
-                );
-            },
-            1000,
-            { leading: true, trailing: true },
-        ),
+
+                        return;
+                    } else {
+                        container.appendChild(overlay.element);
+                    }
+                },
+            );
+            console.log(animationPromises, overlayStore);
+            return Promise.all(animationPromises);
+        }, 1000),
         [],
     );
 

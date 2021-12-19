@@ -30,8 +30,6 @@ export const Overlay: React.FC<OverlayProps> = ({
      */
 
     useEffect(() => {
-        updateOverlayRect(id, portalWrapper.getBoundingClientRect());
-
         return () => unregisterOverlay(position, id);
     }, []);
 

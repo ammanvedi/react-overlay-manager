@@ -40,6 +40,7 @@ export interface OverlayRecord extends OverlayCreationRecord {
     element: HTMLElement;
     translation: Translation | null;
     rect: DOMRect | null;
+    currentMountedPosition: OverlayPosition | null;
 }
 
 export type InsetRecord = {
