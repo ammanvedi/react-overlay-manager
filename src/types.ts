@@ -19,7 +19,7 @@ export type OverlayContextType = {
         position: OverlayRecord['position'],
         id: OverlayRecord['id'],
     ) => void;
-    updateOverlayRect: (id: OverlayId, rect: DOMRect) => void;
+    updateOverlayRecord: (o: OverlayCreationRecord) => void;
     setInset: (inset: InsetRecord) => void;
     removeInset: (insetId: InsetId) => void;
     recalculateInsets: () => void;

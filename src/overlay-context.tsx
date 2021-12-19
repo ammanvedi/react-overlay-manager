@@ -31,6 +31,7 @@ import {
     getInsets,
     getNewInsetStore,
     getNewLayoutStore,
+    insertAtCorrectPosition,
     overlayExists,
     putOverlaysInContainers,
     removeOverlayFromList,
@@ -40,7 +41,7 @@ import {
 const overlayContextDefaultValue: OverlayContextType = Object.freeze({
     unregisterOverlay: () => null,
     registerOverlay: () => document.createElement('div'),
-    updateOverlayRect: () => null,
+    updateOverlayRecord: () => null,
     removeInset: () => null,
     setInset: () => null,
     recalculateInsets: () => null,
@@ -89,8 +90,10 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
 
     const registerOverlay: OverlayContextType['registerOverlay'] = useCallback(
         (overlay) => {
-            if (overlayExists(overlay.id, overlayStore)) {
-                throw new Error(OverlayError.OVERLAY_EXISTS_ALREADY);
+            const existingOverlay = overlayExists(overlay.id, overlayStore);
+            if (existingOverlay) {
+                return existingOverlay.element;
+                //throw new Error(OverlayError.OVERLAY_EXISTS_ALREADY);
             }
 
             /**
@@ -141,7 +144,6 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
 
     const recalculateLayout = useCallback(
         throttleWithPromiseBlocking(() => {
-            console.log('recal;culate');
             /**
              * First we place all divs into the correct containers
              */
@@ -179,12 +181,30 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                                 animateElementIn(overlay.element),
                             );
                         } else {
+                            /**
+                             * We can land in a funny situation here, we move an overlay
+                             * from A to B, but it takes some time to animate out of being
+                             * in A. Meanwhile we are adding more elements to B.
+                             *
+                             * If we were to just append the overlay to B it will be in the
+                             * wrong place due to this asynchronous action.
+                             *
+                             * This is why we need to invoke the insert at correct position function
+                             */
                             animationPromises.push(
                                 animateElementOut(overlay.element)
                                     .then(() => {
                                         overlay.currentMountedPosition =
                                             position;
-                                        container.appendChild(overlay.element);
+
+                                        insertAtCorrectPosition(
+                                            overlay.id,
+                                            container,
+                                            overlay.element,
+                                            overlayLayoutStoreRef.current.get(
+                                                position,
+                                            ) || [],
+                                        );
                                     })
                                     .then(() =>
                                         animateElementIn(overlay.element),
@@ -198,7 +218,6 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                     }
                 },
             );
-            console.log(animationPromises, overlayStore);
             return Promise.all(animationPromises);
         }, 1000),
         [],
@@ -242,13 +261,13 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
         };
     }, []);
 
-    const updateOverlayRect: OverlayContextType['updateOverlayRect'] =
-        useCallback((id, rect) => {
+    const updateOverlayRecord: OverlayContextType['updateOverlayRecord'] =
+        useCallback(({ id, ...newRecord }) => {
             const overlay = overlayStore.get(id);
             if (overlay) {
                 overlayStore.set(id, {
                     ...overlay,
-                    rect,
+                    ...newRecord,
                 });
 
                 recalculateLayout();
@@ -261,7 +280,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                 safeArea: null,
                 registerOverlay,
                 unregisterOverlay,
-                updateOverlayRect,
+                updateOverlayRecord,
                 setInset,
                 removeInset,
                 recalculateInsets,

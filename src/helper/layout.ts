@@ -16,8 +16,11 @@ import throttle from 'lodash.throttle';
  * The main key assumption we can make here is that the
  * overlays in the store are already sorted in precedence order
  */
-export const overlayExists = (id: string, store: OverlayStore): boolean => {
-    return !!store.get(id);
+export const overlayExists = (
+    id: string,
+    store: OverlayStore,
+): false | OverlayRecord => {
+    return store.get(id) || false;
 };
 
 /**
@@ -41,7 +44,7 @@ export const insertOverlayIntoList = (
         }
     }
 
-    return [overlay.id];
+    return [...list, overlay.id];
 };
 
 export const removeOverlayFromList = (
@@ -121,16 +124,20 @@ export const putOverlaysInContainers = (
     // TODO - if we approach the problem like this
     // it is probably better to do a logn sort on the above
     // as the reasoning above probably doesnt make sense any more
-
     const result: OverlayLayoutStore = getNewLayoutStore();
     overlayStore.forEach((overlay) => {
         const destinationPosition =
             getPositionForMatchMedia(responsiveRules[overlay.position]) ||
             overlay.position;
 
-        requestPlaceInDOMContainer(overlay.id, destinationPosition);
         addToLayoutStore(result, destinationPosition, overlay, overlayStore);
     });
+
+    for (const [position, elements] of result) {
+        elements.forEach((el) => {
+            requestPlaceInDOMContainer(el, position);
+        });
+    }
 
     return result;
 };
@@ -199,31 +206,28 @@ export const applyInsets = (el: HTMLElement, insets: InsetRect) => {
  * 1. once every x milliseconds
  * 2. cannot be called while the promise that the function returns is unsettled
  */
-export const throttleWithPromiseBlocking = <
-    PARAMS extends Array<any>,
-    PROMISE_TYPE,
->(
-    fn: (...args: PARAMS) => Promise<PROMISE_TYPE>,
+export const throttleWithPromiseBlocking = <PROMISE_TYPE>(
+    fn: () => Promise<PROMISE_TYPE>,
     throttleInterval: number,
-): ((...args: PARAMS) => Promise<PROMISE_TYPE>) => {
+): (() => Promise<PROMISE_TYPE>) => {
     return (() => {
         let currentPromise: Promise<PROMISE_TYPE> | null = null;
         let didCallWhenPromiseUnresolved = false;
 
         const internalFunc = () => {
-            console.log(currentPromise, didCallWhenPromiseUnresolved);
             if (currentPromise) {
                 didCallWhenPromiseUnresolved = true;
                 return Promise.resolve();
             }
 
-            currentPromise = fn().then(() => {
-                console.log('did resolve');
+            currentPromise = fn().then((result) => {
                 currentPromise = null;
                 if (didCallWhenPromiseUnresolved) {
                     didCallWhenPromiseUnresolved = false;
                     currentPromise = fn();
                 }
+
+                return result;
             });
 
             return currentPromise;
@@ -232,6 +236,27 @@ export const throttleWithPromiseBlocking = <
         return throttle(internalFunc, throttleInterval, {
             trailing: true,
             leading: false,
-        });
+        }) as () => Promise<PROMISE_TYPE>;
     })();
+};
+
+export const insertAtCorrectPosition = (
+    id: OverlayId,
+    container: HTMLElement,
+    element: HTMLElement,
+    desiredOrder: Array<OverlayId>,
+) => {
+    const index = desiredOrder.findIndex((orderedId) => orderedId === id);
+    if (index === -1) {
+        return;
+    }
+
+    if (index === desiredOrder.length - 1) {
+        container.appendChild(element);
+        return;
+    }
+
+    const nextId = desiredOrder[index + 1];
+
+    container.insertBefore(element, container.querySelector(`#${nextId}`));
 };

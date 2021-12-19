@@ -1,10 +1,10 @@
 // @ts-ignore
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { ComponentMeta } from '@storybook/react';
 import { OverlayContext, OverlayContextProvider } from '../overlay-context';
 import { Overlay } from '../overlay';
 import { mockOverlays } from './data';
-import { OverlaySide } from '../types';
+import { OverlayPosition, OverlaySide } from '../types';
 
 export default {
     title: 'Overlay Manager',
@@ -30,9 +30,18 @@ const pageStyles: React.CSSProperties = {
 
 const Story = () => {
     const { setInset, recalculateInsets } = useContext(OverlayContext);
+    const [overlays, setOverlays] = useState(mockOverlays);
 
     useEffect(() => {
         window.addEventListener('scroll', recalculateInsets);
+
+        setTimeout(() => {
+            setOverlays((o) => {
+                o[2].position = OverlayPosition.TOP_RIGHT;
+                o[2].priority = 0;
+                return [...o];
+            });
+        }, 3000);
 
         return () => {
             window.removeEventListener('scroll', recalculateInsets);
@@ -52,7 +61,7 @@ const Story = () => {
                 }}
                 style={navStyles}
             />
-            {mockOverlays.map((o) => (
+            {overlays.map((o) => (
                 <Overlay key={o.id} {...o}>
                     <div style={boxStyles}>Overlay :: {o.id}</div>
                 </Overlay>

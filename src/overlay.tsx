@@ -15,7 +15,7 @@ export const Overlay: React.FC<OverlayProps> = ({
     position,
     priority,
 }) => {
-    const { registerOverlay, unregisterOverlay, updateOverlayRect } =
+    const { registerOverlay, unregisterOverlay, updateOverlayRecord } =
         useContext<OverlayContextType>(OverlayContext);
     const { current: portalWrapper } = useRef<HTMLElement>(
         registerOverlay({
@@ -32,6 +32,14 @@ export const Overlay: React.FC<OverlayProps> = ({
     useEffect(() => {
         return () => unregisterOverlay(position, id);
     }, []);
+
+    useEffect(() => {
+        updateOverlayRecord({
+            id,
+            position,
+            priority,
+        });
+    }, [position, priority]);
 
     return createPortal(children, portalWrapper);
 };

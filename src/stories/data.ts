@@ -1,5 +1,11 @@
 import { OverlayProps } from '../overlay';
-import { OverlayPosition } from '../types';
+import { OverlayId, OverlayPosition } from '../types';
+
+type MoveAction = {
+    type: 'move';
+    id: OverlayId;
+    destination: OverlayPosition;
+};
 
 export const mockOverlays: Array<OverlayProps> = [
     {
