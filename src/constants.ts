@@ -103,6 +103,7 @@ export const BASE_CSS = css`
     }
 
     .overlay-wrapper {
+        width: 100%;
         opacity: 0;
         transition: 0.3s ease-out height, 0.3s ease-out opacity;
     }

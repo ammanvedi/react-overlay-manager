@@ -177,4 +177,4 @@ export const mockOverlays: Array<OverlayProps & RandomizablePlaceholderProps> =
                 bgColor: getRandCol(),
             };
         })
-        .slice(0, 1);
+        .slice(0, 11);

@@ -204,6 +204,11 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                             animationPromises.push(
                                 animateElementOut(overlay.element)
                                     .then(() => {
+                                        /**
+                                         * We need to update the reference to the object we have here because
+                                         * the reference might be changed elsewhere and this is an async operation
+                                         * so some time will have passed between
+                                         */
                                         const _overlay =
                                             overlayStore.current.get(id);
 
@@ -240,7 +245,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
             );
 
             return Promise.all(animationPromises);
-        }, 1000),
+        }, 500),
         [],
     );
 

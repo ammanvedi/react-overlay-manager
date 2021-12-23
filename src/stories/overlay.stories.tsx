@@ -31,6 +31,8 @@ const navStyles: React.CSSProperties = {
     width: '100%',
     backgroundColor: 'blue',
     height: 70,
+    borderRadius: 10,
+    border: '3px solid black',
 };
 
 const pageStyles: React.CSSProperties = {
@@ -46,6 +48,7 @@ const Story = () => {
 
     useEffect(() => {
         window.addEventListener('scroll', recalculateInsets);
+        document.body.style.backgroundColor = '#6c5ce7';
 
         return () => {
             window.removeEventListener('scroll', recalculateInsets);
@@ -58,7 +61,7 @@ const Story = () => {
                 const action = getRandomEvent(overlays.length, o);
                 return applyRandomActionToOverlays(action, o);
             });
-        }, 500);
+        }, 250);
 
         return () => {
             clearInterval(intervalId);
