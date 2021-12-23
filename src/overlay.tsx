@@ -15,8 +15,12 @@ export const Overlay: React.FC<OverlayProps> = ({
     position,
     priority,
 }) => {
-    const { registerOverlay, unregisterOverlay, updateOverlayRecord } =
-        useContext<OverlayContextType>(OverlayContext);
+    const {
+        registerOverlay,
+        unregisterOverlay,
+        updateOverlayRecord,
+        setOverlayReady,
+    } = useContext<OverlayContextType>(OverlayContext);
     const { current: portalWrapper } = useRef<HTMLElement>(
         registerOverlay({
             id,
@@ -30,7 +34,28 @@ export const Overlay: React.FC<OverlayProps> = ({
      */
 
     useEffect(() => {
-        return () => unregisterOverlay(position, id);
+        /**
+         * It may take some time for react to place the portal in this
+         * child element, so lets wait for that to happen and then trigger
+         * a layout refresh.
+         */
+        const observer = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (
+                    mutation.type === 'childList' &&
+                    portalWrapper.children.length >= 1
+                ) {
+                    setOverlayReady();
+                }
+            }
+            observer.disconnect();
+        });
+
+        observer.observe(portalWrapper, { childList: true });
+
+        return () => {
+            unregisterOverlay(position, id);
+        };
     }, []);
 
     useEffect(() => {

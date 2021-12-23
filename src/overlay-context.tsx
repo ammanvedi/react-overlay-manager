@@ -23,6 +23,7 @@ import {
     createElementWithId,
     createElementWithInnerHTML,
     getContainerForPosition,
+    getFinalWidth,
 } from './helper/dom';
 import throttle from 'lodash.throttle';
 import debounce from 'lodash.debounce';
@@ -35,8 +36,8 @@ import {
     overlayExists,
     putOverlaysInContainers,
     removeOverlayFromList,
-    throttleWithPromiseBlocking,
 } from './helper/layout';
+import { createScheduledFunction } from './helper/scheduler';
 
 const overlayContextDefaultValue: OverlayContextType = Object.freeze({
     unregisterOverlay: () => null,
@@ -45,6 +46,7 @@ const overlayContextDefaultValue: OverlayContextType = Object.freeze({
     removeInset: () => null,
     setInset: () => null,
     recalculateInsets: () => null,
+    setOverlayReady: () => null,
     safeArea: null,
 });
 
@@ -76,9 +78,9 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
     const { current: overlaySideInsetStore } = useRef<OverlaySideInsetStore>(
         getNewInsetStore(),
     );
-    const { current: overlayLayoutStore } = overlayLayoutStoreRef;
-    const { current: overlayStore } = useRef<OverlayStore>(new Map());
-    const { current: elementRef } = useRef(
+    const overlayLayoutStore = overlayLayoutStoreRef;
+    const overlayStore = useRef<OverlayStore>(new Map());
+    const elementRef = useRef(
         addToBodyAndRemoveOld(
             createElementWithInnerHTML('div', rootId, BASE_LAYOUT),
             rootId,
@@ -90,7 +92,10 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
 
     const registerOverlay: OverlayContextType['registerOverlay'] = useCallback(
         (overlay) => {
-            const existingOverlay = overlayExists(overlay.id, overlayStore);
+            const existingOverlay = overlayExists(
+                overlay.id,
+                overlayStore.current,
+            );
             if (existingOverlay) {
                 return existingOverlay.element;
                 //throw new Error(OverlayError.OVERLAY_EXISTS_ALREADY);
@@ -120,8 +125,8 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                 translation: null,
             };
 
-            overlayStore.set(overlay.id, overlayRecord);
-            recalculateLayout();
+            overlayStore.current.set(overlay.id, overlayRecord);
+
             return portalContainerForOverlay;
         },
         [],
@@ -129,32 +134,33 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
 
     const unregisterOverlay: OverlayContextType['unregisterOverlay'] =
         useCallback((position, id) => {
-            if (overlayExists(id, overlayStore)) {
-                overlayLayoutStore.set(
+            if (overlayExists(id, overlayStore.current)) {
+                overlayLayoutStore.current.set(
                     position,
                     removeOverlayFromList(
                         id,
-                        overlayLayoutStore.get(position) as Array<OverlayId>,
-                        overlayStore,
+                        overlayLayoutStore.current.get(
+                            position,
+                        ) as Array<OverlayId>,
+                        overlayStore.current,
                     ),
                 );
-                overlayStore.delete(id);
+                overlayStore.current.delete(id);
             }
         }, []);
 
     const recalculateLayout = useCallback(
-        throttleWithPromiseBlocking(() => {
-            console.log('recalc');
+        createScheduledFunction(() => {
             /**
              * First we place all divs into the correct containers
              */
             const animationPromises: Array<Promise<void>> = [];
             overlayLayoutStoreRef.current = putOverlaysInContainers(
-                overlayStore,
+                overlayStore.current,
                 DEFAULT_RESPONSIVE_RULES,
                 (id: OverlayId, position: OverlayPosition) => {
                     const container = getContainerForPosition(position);
-                    const overlay = overlayStore.get(id);
+                    const overlay = overlayStore.current.get(id);
 
                     if (!container || !overlay) {
                         return;
@@ -179,7 +185,10 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                             overlay.currentMountedPosition = position;
                             container.appendChild(overlay.element);
                             animationPromises.push(
-                                animateElementIn(overlay.element),
+                                animateElementIn(
+                                    overlay.element,
+                                    getFinalWidth(overlay),
+                                ),
                             );
                         } else {
                             /**
@@ -195,20 +204,30 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                             animationPromises.push(
                                 animateElementOut(overlay.element)
                                     .then(() => {
-                                        overlay.currentMountedPosition =
+                                        const _overlay =
+                                            overlayStore.current.get(id);
+
+                                        if (!_overlay) {
+                                            return;
+                                        }
+
+                                        _overlay.currentMountedPosition =
                                             position;
 
                                         insertAtCorrectPosition(
-                                            overlay.id,
+                                            _overlay.id,
                                             container,
-                                            overlay.element,
+                                            _overlay.element,
                                             overlayLayoutStoreRef.current.get(
                                                 position,
                                             ) || [],
                                         );
                                     })
                                     .then(() =>
-                                        animateElementIn(overlay.element),
+                                        animateElementIn(
+                                            overlay.element,
+                                            getFinalWidth(overlay),
+                                        ),
                                     ),
                             );
                         }
@@ -219,6 +238,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                     }
                 },
             );
+
             return Promise.all(animationPromises);
         }, 1000),
         [],
@@ -264,15 +284,20 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
 
     const updateOverlayRecord: OverlayContextType['updateOverlayRecord'] =
         useCallback(({ id, ...newRecord }) => {
-            const overlay = overlayStore.get(id);
+            const overlay = overlayStore.current.get(id);
             if (overlay) {
-                overlayStore.set(id, {
+                overlayStore.current.set(id, {
                     ...overlay,
                     ...newRecord,
                 });
 
                 recalculateLayout();
             }
+        }, []);
+
+    const setOverlayReady: OverlayContextType['setOverlayReady'] =
+        useCallback(() => {
+            recalculateLayout();
         }, []);
 
     return (
@@ -285,6 +310,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                 setInset,
                 removeInset,
                 recalculateInsets,
+                setOverlayReady,
             }}
         >
             {children}

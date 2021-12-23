@@ -2,13 +2,18 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { ComponentMeta } from '@storybook/react';
 import { OverlayContext, OverlayContextProvider } from '../overlay-context';
-import { Overlay } from '../overlay';
+import { Overlay, OverlayProps } from '../overlay';
 import {
     applyRandomActionToOverlays,
     getRandomEvent,
     mockOverlays,
 } from './data';
 import { OverlayPosition, OverlaySide } from '../types';
+import {
+    PlaceholderFullWidthNotification,
+    PlaceholderNotification,
+    RandomizablePlaceholderProps,
+} from './placeholder-notification';
 
 export default {
     title: 'Overlay Manager',
@@ -16,7 +21,7 @@ export default {
 } as ComponentMeta<any>;
 
 const boxStyles: React.CSSProperties = {
-    width: 200,
+    width: 280,
     height: 20,
     margin: 10,
     backgroundColor: 'pink',
@@ -34,7 +39,10 @@ const pageStyles: React.CSSProperties = {
 
 const Story = () => {
     const { setInset, recalculateInsets } = useContext(OverlayContext);
-    const [overlays, setOverlays] = useState(mockOverlays);
+    const [overlays, setOverlays] =
+        useState<Array<OverlayProps & RandomizablePlaceholderProps>>(
+            mockOverlays,
+        );
 
     useEffect(() => {
         window.addEventListener('scroll', recalculateInsets);
@@ -47,7 +55,7 @@ const Story = () => {
     useEffect(() => {
         const intervalId = setInterval(() => {
             setOverlays((o) => {
-                const action = getRandomEvent(overlays.length);
+                const action = getRandomEvent(overlays.length, o);
                 return applyRandomActionToOverlays(action, o);
             });
         }, 500);
@@ -55,7 +63,7 @@ const Story = () => {
         return () => {
             clearInterval(intervalId);
         };
-    }, [overlays]);
+    }, []);
 
     /**
      * TODO make a point that this ref callback needs to be
@@ -75,11 +83,33 @@ const Story = () => {
     return (
         <div style={pageStyles}>
             <nav ref={refCb} style={navStyles} />
-            {overlays.map((o) => (
-                <Overlay key={o.id} {...o}>
-                    <div style={boxStyles}>Overlay :: {o.id}</div>
-                </Overlay>
-            ))}
+            {overlays.map((o) => {
+                switch (o.position) {
+                    case OverlayPosition.TOP_FULL_WIDTH:
+                    case OverlayPosition.BOTTOM_FULL_WIDTH:
+                        return (
+                            <Overlay key={o.id} {...o}>
+                                <PlaceholderFullWidthNotification
+                                    id={o.id}
+                                    bgColor={o.bgColor}
+                                >
+                                    <div>Overlay :: {o.id}</div>
+                                </PlaceholderFullWidthNotification>
+                            </Overlay>
+                        );
+                    default:
+                        return (
+                            <Overlay key={o.id} {...o}>
+                                <PlaceholderNotification
+                                    id={o.id}
+                                    bgColor={o.bgColor}
+                                >
+                                    <div>Overlay :: {o.id}</div>
+                                </PlaceholderNotification>
+                            </Overlay>
+                        );
+                }
+            })}
         </div>
     );
 };

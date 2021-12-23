@@ -104,7 +104,7 @@ export const BASE_CSS = css`
 
     .overlay-wrapper {
         opacity: 0;
-        transition: 0.2s ease-out height, 0.2s ease-out opacity;
+        transition: 0.3s ease-out height, 0.3s ease-out opacity;
     }
 `;
 
@@ -141,16 +141,16 @@ export const BASE_LAYOUT = `
 
 export const DEFAULT_RESPONSIVE_RULES: ResponsiveRules = {
     [OverlayPosition.TOP_RIGHT]: {
-        '(max-width: 800px)': OverlayPosition.TOP_CENTER,
+        '(max-width: 900px)': OverlayPosition.TOP_CENTER,
     },
     [OverlayPosition.TOP_LEFT]: {
-        '(max-width: 800px)': OverlayPosition.TOP_CENTER,
+        '(max-width: 900px)': OverlayPosition.TOP_CENTER,
     },
     [OverlayPosition.BOTTOM_RIGHT]: {
-        '(max-width: 800px)': OverlayPosition.BOTTOM_CENTER,
+        '(max-width: 900px)': OverlayPosition.BOTTOM_CENTER,
     },
     [OverlayPosition.BOTTOM_LEFT]: {
-        '(max-width: 800px)': OverlayPosition.BOTTOM_CENTER,
+        '(max-width: 900px)': OverlayPosition.BOTTOM_CENTER,
     },
     [OverlayPosition.TOP_FULL_WIDTH]: null,
     [OverlayPosition.BOTTOM_FULL_WIDTH]: null,

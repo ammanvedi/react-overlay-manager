@@ -200,47 +200,6 @@ export const applyInsets = (el: HTMLElement, insets: InsetRect) => {
     }px ${insets[OverlaySide.BOTTOM]}px ${insets[OverlaySide.LEFT]}px`;
 };
 
-/**
- * The aim of this function is to take an input function and return a function
- * that can only be called;
- * 1. once every x milliseconds
- * 2. cannot be called while the promise that the function returns is unsettled
- */
-export const throttleWithPromiseBlocking = <PROMISE_TYPE>(
-    fn: () => Promise<PROMISE_TYPE>,
-    throttleInterval: number,
-): (() => Promise<PROMISE_TYPE>) => {
-    return (() => {
-        let currentPromise: Promise<PROMISE_TYPE> | null = null;
-        let didCallWhenPromiseUnresolved = false;
-
-        const internalFunc = () => {
-            if (currentPromise) {
-                console.log('has current promise');
-                didCallWhenPromiseUnresolved = true;
-                return Promise.resolve();
-            }
-
-            currentPromise = fn().then((result) => {
-                currentPromise = null;
-                if (didCallWhenPromiseUnresolved) {
-                    didCallWhenPromiseUnresolved = false;
-                    currentPromise = fn();
-                }
-
-                return result;
-            });
-
-            return currentPromise;
-        };
-
-        return throttle(internalFunc, throttleInterval, {
-            trailing: true,
-            leading: false,
-        }) as () => Promise<PROMISE_TYPE>;
-    })();
-};
-
 export const insertAtCorrectPosition = (
     id: OverlayId,
     container: HTMLElement,

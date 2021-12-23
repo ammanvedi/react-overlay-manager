@@ -1,4 +1,4 @@
-import { OverlayPosition } from '../types';
+import { OverlayPosition, OverlayRecord } from '../types';
 import { ID_MAP } from '../constants';
 
 export const createElementWithId = <T extends keyof HTMLElementTagNameMap>(
@@ -50,7 +50,10 @@ export const addToBodyAndRemoveOld = <T extends HTMLElement>(
     return el;
 };
 
-export const animateElementIn = (el: HTMLElement): Promise<void> => {
+export const animateElementIn = (
+    el: HTMLElement,
+    finalWidth = 'auto',
+): Promise<void> => {
     el.style.display = 'inline-block';
     el.style.height = `auto`;
     const { width, height } = el.getBoundingClientRect();
@@ -64,7 +67,7 @@ export const animateElementIn = (el: HTMLElement): Promise<void> => {
         .then(() => transitionProperty(el, 'opacity', '0', '1'))
         .then(() => {
             el.style.height = 'auto';
-            el.style.width = `auto`;
+            el.style.width = finalWidth;
             el.style.display = 'inline-block';
             el.style.overflow = 'initial';
         });
@@ -125,4 +128,14 @@ export const transitionProperty = (
     }, 0);
 
     return resultPromise;
+};
+
+export const getFinalWidth = (o: OverlayRecord): string => {
+    switch (o.position) {
+        case OverlayPosition.BOTTOM_FULL_WIDTH:
+        case OverlayPosition.TOP_FULL_WIDTH:
+            return '100%';
+        default:
+            return 'auto';
+    }
 };
