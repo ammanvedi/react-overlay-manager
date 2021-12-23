@@ -33,7 +33,7 @@ const pageStyles: React.CSSProperties = {
 };
 
 const Story = () => {
-    const { setInset, recalculateInsets } = useContext(OverlayContext);
+    const { setInset, recalculateInsets, clear } = useContext(OverlayContext);
     const [overlays, setOverlays] =
         useState<Array<OverlayProps & RandomizablePlaceholderProps>>(
             mockOverlays,
@@ -44,6 +44,7 @@ const Story = () => {
         document.body.style.backgroundColor = '#6c5ce7';
 
         return () => {
+            clear();
             window.removeEventListener('scroll', recalculateInsets);
         };
     }, []);

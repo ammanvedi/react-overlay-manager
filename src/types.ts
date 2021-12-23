@@ -24,6 +24,7 @@ export type OverlayContextType = {
     removeInset: (insetId: InsetId) => void;
     recalculateInsets: () => void;
     setOverlayReady: () => void;
+    clear: () => void;
 };
 
 export interface OverlayCreationRecord {
