@@ -20,13 +20,6 @@ export default {
     component: OverlayContextProvider,
 } as ComponentMeta<any>;
 
-const boxStyles: React.CSSProperties = {
-    width: 280,
-    height: 20,
-    margin: 10,
-    backgroundColor: 'pink',
-};
-
 const navStyles: React.CSSProperties = {
     width: '100%',
     backgroundColor: 'blue',

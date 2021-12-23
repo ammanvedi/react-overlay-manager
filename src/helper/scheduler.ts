@@ -120,6 +120,14 @@ export const createScheduledFunction = <
                 return res;
             });
 
+            /**
+             * We are wrapping functions that return promises, however we wrap
+             * them in a function that might not actually call the desired function
+             * for a while. So we returned the placeholder promise earlier.
+             *
+             * Now we have invoked the function we can resolve the placeholder
+             * promise with the actual promise.
+             */
             if (placeholder) {
                 placeholder.setResolutionPromise(resultPromise);
             }
