@@ -215,6 +215,31 @@ export const SimpleNotifications = () => {
     );
 };
 
+export const StackNotifications = () => {
+    return (
+        <OverlayContextProvider>
+            <Overlay
+                id="b"
+                position={OverlayPosition.TOP_FULL_WIDTH}
+                priority={1}
+            >
+                <PlaceholderNotification id="b" bgColor={getRandCol()}>
+                    Overlay B
+                </PlaceholderNotification>
+            </Overlay>
+            <Overlay
+                id="a"
+                position={OverlayPosition.TOP_FULL_WIDTH}
+                priority={0}
+            >
+                <PlaceholderNotification id="a" bgColor={getRandCol()}>
+                    Overlay A
+                </PlaceholderNotification>
+            </Overlay>
+        </OverlayContextProvider>
+    );
+};
+
 export const AvoidNavigation = () => {
     return (
         <OverlayContextProvider>

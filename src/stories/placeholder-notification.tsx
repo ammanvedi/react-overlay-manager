@@ -11,6 +11,7 @@ export interface RandomizablePlaceholderProps {
 export const PlaceholderNotification: React.FC<PlaceholderProps> = ({
     id,
     bgColor,
+    children,
 }) => {
     return (
         <div
@@ -47,23 +48,37 @@ export const PlaceholderNotification: React.FC<PlaceholderProps> = ({
                     marginLeft: 10,
                 }}
             >
-                <div
-                    style={{
-                        height: 15,
-                        width: '70%',
-                        backgroundColor: 'black',
-                        borderRadius: 4,
-                    }}
-                ></div>
-                <div
-                    style={{
-                        height: 15,
-                        width: '40%',
-                        backgroundColor: 'black',
-                        marginTop: 5,
-                        borderRadius: 4,
-                    }}
-                ></div>
+                {children ? (
+                    <div
+                        style={{
+                            fontFamily: 'helvetica, arial, sans-serif',
+                            fontWeight: 'bold',
+                            color: '#212121',
+                        }}
+                    >
+                        {children}
+                    </div>
+                ) : (
+                    <>
+                        <div
+                            style={{
+                                height: 15,
+                                width: '70%',
+                                backgroundColor: 'black',
+                                borderRadius: 4,
+                            }}
+                        ></div>
+                        <div
+                            style={{
+                                height: 15,
+                                width: '40%',
+                                backgroundColor: 'black',
+                                marginTop: 5,
+                                borderRadius: 4,
+                            }}
+                        ></div>
+                    </>
+                )}
             </div>
         </div>
     );

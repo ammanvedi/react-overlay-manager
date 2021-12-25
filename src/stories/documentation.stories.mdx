@@ -70,24 +70,26 @@ For example the given code
 ```tsx dark="true"
 <OverlayContextProvider>
     <Overlay
-        id="a"
-        position={OverlayPosition.TOP_FULL_WIDTH}
-        priority={0}
-    >
-        <div style={{width: 200, height: 100}} >Overlay Content</div>
-    </Overlay>
-    <Overlay
         id="b"
         position={OverlayPosition.TOP_FULL_WIDTH}
         priority={1}
     >
-        <div style={{width: 200, height: 100}} >Overlay Content</div>
+        <div>Overlay B</div>
+    </Overlay>
+    <Overlay
+        id="a"
+        position={OverlayPosition.TOP_FULL_WIDTH}
+        priority={0}
+    >
+        <div>Overlay A</div>
     </Overlay>
 </OverlayContextProvider>
 ```
 
+
+
 <Canvas>
-    <Story height={'500px'} id="overlay-manager--simple-notifications" />
+    <Story height={'500px'} id="overlay-manager--stack-notifications" />
 </Canvas>
 
 ### Insets
@@ -98,8 +100,11 @@ For example the given code
 
 ### Priorities
 
+### Responsive & Breakpoints
+
 ### More Complex
 
 <Canvas>
     <Story height={'800px'} id="overlay-manager--stress-test" />
 </Canvas>
+
