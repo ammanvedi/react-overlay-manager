@@ -1,9 +1,19 @@
 export const parameters = {
-  actions: { argTypesRegex: "^on[A-Z].*" },
-  controls: {
-    matchers: {
-      color: /(background|color)$/i,
-      date: /Date$/,
+    docs: { inlineStories: false },
+    actions: { argTypesRegex: '^on[A-Z].*', disabled: true },
+    controls: {
+        disable: true,
+        matchers: {
+            color: /(background|color)$/i,
+            date: /Date$/,
+        },
     },
-  },
-}
+    options: {
+        showPanel: false,
+    },
+    previewTabs: {
+        'storybook/docs/panel': {
+            hidden: true,
+        },
+    },
+};

@@ -1,0 +1,105 @@
+import { Meta } from '@storybook/addon-docs';
+import { SimpleNotifications } from './overlay.stories';
+import { Story } from '@storybook/addon-docs';
+
+
+
+<Meta title="Documentation" />
+
+# React Overlay Manager
+
+React Overlay Manager is a set of React components for positioning floating overlays
+in a declarative manner.
+
+## Installation
+
+You can install the package via NPM
+
+`npm install --save react-overlay-manager`
+
+## Usage
+
+### Basic
+
+Here is a basic example illustrating the various positions we can place
+overlays
+
+
+<Canvas>
+    <Story height={'500px'} id="overlay-manager--simple-notifications" />
+</Canvas>
+
+Here is an example of the basic set up to create a single overlay, but you can add
+as many as you like.
+
+```tsx dark="true"
+import { OverlayContextProvider } from 'react-overlay-manager';
+
+<OverlayContextProvider>
+    <Overlay
+        id="a"
+        position={OverlayPosition.TOP_FULL_WIDTH}
+        priority={1}
+    >
+        <div style={{width: 200, height: 100}} >Overlay Content</div>
+    </Overlay>
+</OverlayContextProvider>
+```
+The following positions are available
+```ts dark="true"
+enum OverlayPosition {
+     TOP_FULL_WIDTH = 'TOP_FULL_WIDTH',
+     BOTTOM_FULL_WIDTH = 'BOTTOM_FULL_WIDTH',
+     TOP_LEFT = 'TOP_LEFT',
+     TOP_CENTER = 'TOP_CENTER',
+     TOP_RIGHT = 'TOP_RIGHT',
+     BOTTOM_LEFT = 'BOTTOM_LEFT',
+     BOTTOM_CENTER = 'BOTTOM_CENTER',
+     BOTTOM_RIGHT = 'BOTTOM_RIGHT',
+ }
+```
+
+### Stacking & Priorities
+
+When we add multiple overlays to the same container they are ordered
+1. By their `priority` value where lower values are at the top
+2. By the time they were added (or their parameters last updated)
+
+For example the given code
+
+```tsx dark="true"
+<OverlayContextProvider>
+    <Overlay
+        id="a"
+        position={OverlayPosition.TOP_FULL_WIDTH}
+        priority={0}
+    >
+        <div style={{width: 200, height: 100}} >Overlay Content</div>
+    </Overlay>
+    <Overlay
+        id="b"
+        position={OverlayPosition.TOP_FULL_WIDTH}
+        priority={1}
+    >
+        <div style={{width: 200, height: 100}} >Overlay Content</div>
+    </Overlay>
+</OverlayContextProvider>
+```
+
+<Canvas>
+    <Story height={'500px'} id="overlay-manager--simple-notifications" />
+</Canvas>
+
+### Insets
+
+<Canvas>
+    <Story height={'500px'} id="overlay-manager--avoid-navigation" />
+</Canvas>
+
+### Priorities
+
+### More Complex
+
+<Canvas>
+    <Story height={'800px'} id="overlay-manager--stress-test" />
+</Canvas>

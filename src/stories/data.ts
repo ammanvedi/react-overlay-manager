@@ -76,7 +76,7 @@ const colors = [
     '#b2bec3',
 ];
 
-const getRandCol = () => {
+export const getRandCol = () => {
     return colors[randomValue(0, colors.length)];
 };
 

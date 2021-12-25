@@ -14,6 +14,7 @@ import {
     PlaceholderNotification,
     RandomizablePlaceholderProps,
 } from './placeholder-notification';
+import { getRandCol } from './data';
 
 export default {
     title: 'Overlay Manager',
@@ -29,25 +30,15 @@ const navStyles: React.CSSProperties = {
 };
 
 const pageStyles: React.CSSProperties = {
-    height: '200vh',
+    height: '120vh',
 };
 
 const Story = () => {
-    const { setInset, recalculateInsets, clear } = useContext(OverlayContext);
+    document.body.style.backgroundColor = '#6c5ce7';
     const [overlays, setOverlays] =
         useState<Array<OverlayProps & RandomizablePlaceholderProps>>(
             mockOverlays,
         );
-
-    useEffect(() => {
-        window.addEventListener('scroll', recalculateInsets);
-        document.body.style.backgroundColor = '#6c5ce7';
-
-        return () => {
-            clear();
-            window.removeEventListener('scroll', recalculateInsets);
-        };
-    }, []);
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -59,6 +50,111 @@ const Story = () => {
 
         return () => {
             clearInterval(intervalId);
+        };
+    }, []);
+
+    return (
+        <div style={pageStyles}>
+            {overlays.map((o) => {
+                switch (o.position) {
+                    case OverlayPosition.TOP_FULL_WIDTH:
+                    case OverlayPosition.BOTTOM_FULL_WIDTH:
+                        return (
+                            <Overlay key={o.id} {...o}>
+                                <PlaceholderFullWidthNotification
+                                    id={o.id}
+                                    bgColor={o.bgColor}
+                                >
+                                    <div>Overlay :: {o.id}</div>
+                                </PlaceholderFullWidthNotification>
+                            </Overlay>
+                        );
+                    default:
+                        return (
+                            <Overlay key={o.id} {...o}>
+                                <PlaceholderNotification
+                                    id={o.id}
+                                    bgColor={o.bgColor}
+                                >
+                                    <div>Overlay :: {o.id}</div>
+                                </PlaceholderNotification>
+                            </Overlay>
+                        );
+                }
+            })}
+        </div>
+    );
+};
+
+const SimpleStory = () => {
+    document.body.style.backgroundColor = '#6c5ce7';
+    const { setInset, clear, recalculateInsets } = useContext(OverlayContext);
+
+    return (
+        <div style={{ height: '100vh' }}>
+            <Overlay
+                id="a"
+                position={OverlayPosition.TOP_FULL_WIDTH}
+                priority={1}
+            >
+                <PlaceholderFullWidthNotification
+                    id="a"
+                    bgColor={getRandCol()}
+                />
+            </Overlay>
+            <Overlay
+                id="b"
+                position={OverlayPosition.BOTTOM_FULL_WIDTH}
+                priority={1}
+            >
+                <PlaceholderFullWidthNotification
+                    id="b"
+                    bgColor={getRandCol()}
+                />
+            </Overlay>
+            <Overlay id="c" position={OverlayPosition.TOP_LEFT} priority={1}>
+                <PlaceholderNotification id="c" bgColor={getRandCol()} />
+            </Overlay>
+            <Overlay id="d" position={OverlayPosition.TOP_CENTER} priority={1}>
+                <PlaceholderNotification id="d" bgColor={getRandCol()} />
+            </Overlay>
+            <Overlay id="e" position={OverlayPosition.TOP_RIGHT} priority={1}>
+                <PlaceholderNotification id="e" bgColor={getRandCol()} />
+            </Overlay>
+            <Overlay id="f" position={OverlayPosition.BOTTOM_LEFT} priority={1}>
+                <PlaceholderNotification id="f" bgColor={getRandCol()} />
+            </Overlay>
+            <Overlay
+                id="g"
+                position={OverlayPosition.BOTTOM_CENTER}
+                priority={1}
+            >
+                <PlaceholderNotification id="g" bgColor={getRandCol()} />
+            </Overlay>
+            <Overlay
+                id="h"
+                position={OverlayPosition.BOTTOM_RIGHT}
+                priority={1}
+            >
+                <PlaceholderNotification id="h" bgColor={getRandCol()} />
+            </Overlay>
+        </div>
+    );
+};
+
+const InsetStory = () => {
+    const { setInset, recalculateInsets, clear } = useContext(OverlayContext);
+    const [overlays, setOverlays] = useState<
+        Array<OverlayProps & RandomizablePlaceholderProps>
+    >(mockOverlays.slice(0, 6));
+
+    useEffect(() => {
+        window.addEventListener('scroll', recalculateInsets);
+        document.body.style.backgroundColor = '#6c5ce7';
+
+        return () => {
+            clear();
+            window.removeEventListener('scroll', recalculateInsets);
         };
     }, []);
 
@@ -111,7 +207,23 @@ const Story = () => {
     );
 };
 
-export const Default = () => {
+export const SimpleNotifications = () => {
+    return (
+        <OverlayContextProvider>
+            <SimpleStory />
+        </OverlayContextProvider>
+    );
+};
+
+export const AvoidNavigation = () => {
+    return (
+        <OverlayContextProvider>
+            <InsetStory />
+        </OverlayContextProvider>
+    );
+};
+
+export const StressTest = () => {
     return (
         <OverlayContextProvider>
             <Story />
