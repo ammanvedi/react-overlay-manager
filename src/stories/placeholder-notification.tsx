@@ -143,3 +143,15 @@ export const PlaceholderFullWidthNotification: React.FC<PlaceholderProps> = ({
         </div>
     );
 };
+
+export const L: React.FC = ({ children }) => (
+    <div
+        style={{
+            height: 100,
+            width: 100,
+        }}
+        id={'poop'}
+    >
+        {children[0]}
+    </div>
+);
