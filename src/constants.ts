@@ -90,22 +90,14 @@ export const BASE_CSS = css`
         align-self: flex-end;
     }
 
-    .box {
-        width: 100px;
-        height: 100px;
-        background-color: red;
-        border: 3px solid blue;
-        opacity: 0.8;
-    }
-
-    .box--full {
-        width: 100%;
-    }
-
     .overlay-wrapper {
         width: 100%;
         opacity: 0;
         transition: 0.3s ease-out height, 0.3s ease-out opacity;
+    }
+
+    .overlay-wrapper > * {
+        box-sizing: border-box;
     }
 `;
 
@@ -153,8 +145,4 @@ export const DEFAULT_RESPONSIVE_RULES: ResponsiveRules = {
     [OverlayPosition.BOTTOM_LEFT]: {
         '(max-width: 900px)': OverlayPosition.BOTTOM_CENTER,
     },
-    [OverlayPosition.TOP_FULL_WIDTH]: null,
-    [OverlayPosition.BOTTOM_FULL_WIDTH]: null,
-    [OverlayPosition.TOP_CENTER]: null,
-    [OverlayPosition.BOTTOM_CENTER]: null,
 };

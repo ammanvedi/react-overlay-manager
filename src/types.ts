@@ -115,4 +115,6 @@ export type LayoutDifferential =
 
 export type MatchMediaRecord = Record<string, OverlayPosition>;
 
-export type ResponsiveRules = Record<OverlayPosition, MatchMediaRecord | null>;
+export type ResponsiveRules = Partial<
+    Record<OverlayPosition, MatchMediaRecord | null>
+>;

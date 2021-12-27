@@ -10,9 +10,21 @@ export interface OverlayProps {
 }
 
 export const Overlay: React.FC<OverlayProps> = ({
+    /**
+     * There should be a single child, the component that you need to overlay
+     */
     children,
+    /**
+     * A unique ID for this overlay
+     */
     id,
+    /**
+     * Where to render the component, for more information see the Positioning documentation
+     */
     position,
+    /**
+     * The priority index of the component, for more information see the Priorities documentation
+     */
     priority,
 }) => {
     const {

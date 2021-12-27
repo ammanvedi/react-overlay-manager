@@ -1,0 +1,58 @@
+import { Meta } from '@storybook/addon-docs';
+import { Story } from '@storybook/addon-docs';
+
+
+
+<Meta title="Documentation/Introduction" />
+
+# React Overlay Manager
+
+
+
+React Overlay Manager is a set of React components for positioning floating overlays over your application
+in a declarative manner. It has the following features;
+
+1. Place overlays in a declarative manner in one of 8 positions
+2. Automatically avoid existing overlays
+3. Order overlays with priorities
+4. Avoid existing UI elements, for example navigation bars.
+5. Define rules for positioning overlay based on media queries
+6. Events for handling overlays overflowing the viewport
+
+<Canvas>
+    <Story height={'385px'} id="overlay-manager--simple-notifications" />
+</Canvas>
+
+This library is a product of some ideas I have implemented at various workplaces where we needed
+to enable develoers to add overlays to a page without having to worry about testing them
+in every permutation of interaction with other overlays across the site.
+
+With this library you should be able to define rules and rest easy knowing that layout will be
+handled properly.
+
+## Installation
+
+You can install the package via NPM
+
+`npm install --save react-overlay-manager`
+
+## How Does It Work?
+
+The diagram below shows the general idea. The package provides a `OverlayContextProvider` which
+should wrap your application. Also provided is a `Overlay` component that should wrap the
+overlay you want to display.
+
+For each `Overlay` component we create a portal that we render into a layer above your application
+
+![Architecture Diagram](https://i.imgur.com/iCPFcnM.png)
+
+## Performance Considerations
+There is a stress test available to view, you can see that the overlay manager performs
+well even when updates are dispatched to it every 100ms. Layout updates are throttled
+and consecutive updates are dispatched to the end of the event queue to avoid potentially
+starving other code when a-lot of overlays are rendered
+
+
+
+
+

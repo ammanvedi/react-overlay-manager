@@ -52,11 +52,14 @@ export const addToBodyAndRemoveOld = <T extends HTMLElement>(
 
 export const animateElementIn = (
     el: HTMLElement,
+    dimensionReferenceElement: Element | null,
     finalWidth = 'auto',
 ): Promise<void> => {
     el.style.display = 'inline-block';
     el.style.height = `auto`;
-    const { width, height } = el.getBoundingClientRect();
+    const { width, height } = getFullHeightAndWidthOfElement(
+        dimensionReferenceElement || el,
+    );
     el.style.width = `${width}px`;
     el.style.height = `0px`;
     el.style.display = 'block';
@@ -73,9 +76,14 @@ export const animateElementIn = (
         });
 };
 
-export const animateElementOut = (el: HTMLElement): Promise<void> => {
+export const animateElementOut = (
+    el: HTMLElement,
+    dimensionReferenceElement: Element | null,
+): Promise<void> => {
     el.style.display = 'inline-block';
-    const { width, height } = el.getBoundingClientRect();
+    const { width, height } = getFullHeightAndWidthOfElement(
+        dimensionReferenceElement || el,
+    );
 
     el.style.height = `${height}px`;
     el.style.width = `${width}px`;
@@ -125,7 +133,7 @@ export const transitionProperty = (
      */
     setTimeout(() => {
         el.style[property] = target;
-    }, 0);
+    }, 1);
 
     return resultPromise;
 };
@@ -138,4 +146,22 @@ export const getFinalWidth = (o: OverlayRecord): string => {
         default:
             return 'auto';
     }
+};
+
+export const getWidthReference = (el: HTMLElement): Element | null => {
+    return el.children[0];
+};
+
+export const getFullHeightAndWidthOfElement = (
+    el: Element,
+): { width: number; height: number } => {
+    const { width: baseWidth, height: baseHeight } = el.getBoundingClientRect();
+
+    const { marginLeft, marginRight, marginTop, marginBottom } =
+        window.getComputedStyle(el);
+
+    return {
+        width: baseWidth + parseInt(marginLeft) + parseInt(marginRight),
+        height: baseHeight + parseInt(marginTop) + parseInt(marginBottom),
+    };
 };

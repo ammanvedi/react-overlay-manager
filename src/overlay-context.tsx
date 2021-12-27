@@ -7,6 +7,7 @@ import {
     OverlayRecord,
     OverlaySideInsetStore,
     OverlayStore,
+    ResponsiveRules,
 } from './types';
 import {
     BASE_LAYOUT,
@@ -23,6 +24,7 @@ import {
     createElementWithInnerHTML,
     getContainerForPosition,
     getFinalWidth,
+    getWidthReference,
 } from './helper/dom';
 import debounce from 'lodash.debounce';
 import {
@@ -54,12 +56,21 @@ export const OverlayContext = createContext<OverlayContextType>(
 );
 
 export interface OverlayContextProviderProps {
+    /**
+     * The id used as a base to generate ids for the overlay
+     * components we will create
+     */
     rootId?: string;
+    /**
+     * Define how overlays move around when the screen size changes
+     */
+    responsiveRules?: ResponsiveRules;
 }
 
 export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
     children,
     rootId = DEFAULT_PORTAL_WRAPPER_ID,
+    responsiveRules = DEFAULT_RESPONSIVE_RULES,
 }) => {
     /**
      * TODO
@@ -151,7 +162,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
             const animationPromises: Array<Promise<void>> = [];
             overlayLayoutStore.current = putOverlaysInContainers(
                 overlayStore.current,
-                DEFAULT_RESPONSIVE_RULES,
+                responsiveRules,
                 (id: OverlayId, position: OverlayPosition) => {
                     const container = getContainerForPosition(position);
                     const overlay = overlayStore.current.get(id);
@@ -181,6 +192,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                             animationPromises.push(
                                 animateElementIn(
                                     overlay.element,
+                                    getWidthReference(overlay.element),
                                     getFinalWidth(overlay),
                                 ),
                             );
@@ -196,7 +208,10 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                              * This is why we need to invoke the insert at correct position function
                              */
                             animationPromises.push(
-                                animateElementOut(overlay.element)
+                                animateElementOut(
+                                    overlay.element,
+                                    getWidthReference(overlay.element),
+                                )
                                     .then(() => {
                                         /**
                                          * We need to update the reference to the object we have here because
@@ -225,6 +240,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                                     .then(() =>
                                         animateElementIn(
                                             overlay.element,
+                                            getWidthReference(overlay.element),
                                             getFinalWidth(overlay),
                                         ),
                                     ),

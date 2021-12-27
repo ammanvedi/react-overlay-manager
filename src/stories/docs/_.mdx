@@ -1,0 +1,149 @@
+Here is an example of the basic set up to create a single overlay, but you can add
+as many as you like.
+
+```tsx dark="true"
+import { OverlayContextProvider } from 'react-overlay-manager';
+
+<OverlayContextProvider>
+    <Overlay
+        id="a"
+        position={OverlayPosition.TOP_FULL_WIDTH}
+        priority={1}
+    >
+        <div style={{width: 200, height: 100}} >Overlay Content</div>
+    </Overlay>
+</OverlayContextProvider>
+```
+The following positions are available
+```ts dark="true"
+enum OverlayPosition {
+     TOP_FULL_WIDTH = 'TOP_FULL_WIDTH',
+     BOTTOM_FULL_WIDTH = 'BOTTOM_FULL_WIDTH',
+     TOP_LEFT = 'TOP_LEFT',
+     TOP_CENTER = 'TOP_CENTER',
+     TOP_RIGHT = 'TOP_RIGHT',
+     BOTTOM_LEFT = 'BOTTOM_LEFT',
+     BOTTOM_CENTER = 'BOTTOM_CENTER',
+     BOTTOM_RIGHT = 'BOTTOM_RIGHT',
+ }
+```
+
+### Stacking & Priorities
+
+When we add multiple overlays to the same container they are ordered
+1. By their `priority` value where lower values are at the top
+2. By the time they were added (or their parameters last updated)
+
+For example the given code
+
+```tsx dark="true"
+<OverlayContextProvider>
+    <Overlay
+        id="b"
+        position={OverlayPosition.TOP_FULL_WIDTH}
+        priority={1}
+    >
+        <div>Overlay B</div>
+    </Overlay>
+    <Overlay
+        id="a"
+        position={OverlayPosition.TOP_FULL_WIDTH}
+        priority={0}
+    >
+        <div>Overlay A</div>
+    </Overlay>
+</OverlayContextProvider>
+```
+
+
+
+<Canvas>
+    <Story height={'500px'} id="overlay-manager--stack-notifications" />
+</Canvas>
+
+### Insets
+
+<Canvas>
+    <Story height={'500px'} id="overlay-manager--avoid-navigation" />
+</Canvas>
+
+### Priorities
+
+### Responsive & Breakpoints
+We can use [Media Queries](https://developer.mozilla.org/en-US/docs/Web/API/Window/matchMedia)
+to take the elements from one overlay position and transfer them to
+another overlay position. The default is as follows;
+
+```tsx
+export const DEFAULT_RESPONSIVE_RULES: ResponsiveRules = {
+    [OverlayPosition.TOP_RIGHT]: {
+        '(max-width: 900px)': OverlayPosition.TOP_CENTER,
+    },
+    [OverlayPosition.TOP_LEFT]: {
+        '(max-width: 900px)': OverlayPosition.TOP_CENTER,
+    },
+    [OverlayPosition.BOTTOM_RIGHT]: {
+        '(max-width: 900px)': OverlayPosition.BOTTOM_CENTER,
+    },
+    [OverlayPosition.BOTTOM_LEFT]: {
+        '(max-width: 900px)': OverlayPosition.BOTTOM_CENTER,
+    },
+};
+```
+
+```tsx
+export const responsiveRules: ResponsiveRules = {
+    [OverlayPosition.TOP_RIGHT]: {
+        '(max-width: 900px)': OverlayPosition.TOP_CENTER,
+    },
+    [OverlayPosition.TOP_LEFT]: {
+        '(max-width: 900px)': OverlayPosition.TOP_CENTER,
+    },
+    [OverlayPosition.BOTTOM_RIGHT]: {
+        '(max-width: 900px)': OverlayPosition.BOTTOM_CENTER,
+    },
+    [OverlayPosition.BOTTOM_LEFT]: {
+        '(max-width: 900px)': OverlayPosition.BOTTOM_CENTER,
+    },
+    [OverlayPosition.TOP_FULL_WIDTH]: null,
+    [OverlayPosition.BOTTOM_FULL_WIDTH]: null,
+    [OverlayPosition.TOP_CENTER]: null,
+    [OverlayPosition.BOTTOM_CENTER]: null,
+};
+
+<OverlayContextProvider responsiveRules={responsiveRules} />
+
+```
+
+<div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+    <div style={{
+        flex: '0 0 320px'
+    }}>
+        <Canvas>
+            <Story
+                width={'320px'}
+                height={'500px'}
+                id="overlay-manager--simple-notifications"
+            />
+        </Canvas>
+    </div>
+    <div style={{
+        flex: '1 0 auto'
+    }}>
+        <Canvas>
+            <Story
+                width={'320px'}
+                height={'500px'}
+                id="overlay-manager--simple-notifications"
+            />
+        </Canvas>
+    </div>
+</div>
+
+
+### More Complex
+
+<Canvas>
+    <Story height={'800px'} id="overlay-manager--stress-test" />
+</Canvas>
+

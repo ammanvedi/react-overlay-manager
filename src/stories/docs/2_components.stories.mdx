@@ -1,0 +1,43 @@
+import { Meta } from '@storybook/addon-docs';
+import { Story } from '@storybook/addon-docs';
+import { ArgsTable } from '@storybook/addon-docs';
+import {OverlayContextProvider} from "../../overlay-context";
+import {Overlay} from "../../overlay";
+
+<Meta title="Documentation/Components" />
+
+# Components
+
+This section describes the components available and their usage
+
+## OverlayContextProvider
+This provider should wrap your application, it will handle rendering your
+overlays into the correct position
+
+<ArgsTable of={OverlayContextProvider} />
+
+```tsx dark="true"
+import { OverlayContextProvider } from "react-overlay-manager";
+
+<OverlayContextProvider>
+    <YourApp />
+</OverlayContextProvider>
+```
+
+## Overlay
+This component will wrap the component you want to render as an overlay
+
+<ArgsTable of={Overlay} />
+
+```tsx dark="true"
+import { Overlay, OverlayPosition } from "react-overlay-manager";
+
+<OverlayContextProvider>
+    <Overlay
+        id="overlay-a"
+        position={OverlayPosition.TOP_FULL_WIDTH}
+        priority={1}>
+        <div>My Overlay</div>
+    </Overlay>
+</OverlayContextProvider>
+```

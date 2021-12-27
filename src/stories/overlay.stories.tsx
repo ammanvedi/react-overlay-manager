@@ -34,7 +34,6 @@ const pageStyles: React.CSSProperties = {
 };
 
 const Story = () => {
-    document.body.style.backgroundColor = '#6c5ce7';
     const [overlays, setOverlays] =
         useState<Array<OverlayProps & RandomizablePlaceholderProps>>(
             mockOverlays,
