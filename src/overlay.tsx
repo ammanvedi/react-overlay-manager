@@ -1,30 +1,31 @@
 import { createPortal } from 'react-dom';
-import React, { useEffect, useContext, useRef } from 'react';
+import React, { useEffect, useContext, useRef, ReactNode } from 'react';
 import { OverlayContextType, OverlayId, OverlayPosition } from './types';
 import { OverlayContext } from './overlay-context';
 
 export interface OverlayProps {
-    id: OverlayId;
-    position: OverlayPosition;
-    priority: number;
-}
-
-export const Overlay: React.FC<OverlayProps> = ({
-    /**
-     * There should be a single child, the component that you need to overlay
-     */
-    children,
     /**
      * A unique ID for this overlay
      */
-    id,
+    id: OverlayId;
     /**
      * Where to render the component, for more information see the Positioning documentation
      */
-    position,
+    position: OverlayPosition;
     /**
      * The priority index of the component, for more information see the Priorities documentation
      */
+    priority: number;
+    /**
+     * There should be a single child, the component that you need to overlay
+     */
+    children: ReactNode;
+}
+
+export const Overlay: React.FC<OverlayProps> = ({
+    children,
+    id,
+    position,
     priority,
 }) => {
     const {

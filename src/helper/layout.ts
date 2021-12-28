@@ -10,7 +10,6 @@ import {
     OverlayStore,
     ResponsiveRules,
 } from '../types';
-import throttle from 'lodash.throttle';
 
 /**
  * The main key assumption we can make here is that the
@@ -126,9 +125,12 @@ export const putOverlaysInContainers = (
     // as the reasoning above probably doesnt make sense any more
     const result: OverlayLayoutStore = getNewLayoutStore();
     overlayStore.forEach((overlay) => {
+        const resConfig = responsiveRules[overlay.position];
+
         const destinationPosition =
-            getPositionForMatchMedia(responsiveRules[overlay.position]) ||
-            overlay.position;
+            (resConfig
+                ? getPositionForMatchMedia(resConfig)
+                : overlay.position) || overlay.position;
 
         addToLayoutStore(result, destinationPosition, overlay, overlayStore);
     });

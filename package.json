@@ -9,7 +9,7 @@
   "description": "Position overlays over your application in a declarative manner",
   "scripts": {
     "test": "./node_modules/.bin/jest",
-    "build": "./node_modules/.bin/tsc",
+    "build": "./node_modules/.bin/tsc && npm run build-storybook",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006",
     "build-storybook": "export NODE_OPTIONS=--openssl-legacy-provider && build-storybook --output-dir docs"
   },
