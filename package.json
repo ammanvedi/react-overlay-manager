@@ -11,7 +11,7 @@
     "test": "./node_modules/.bin/jest",
     "build": "./node_modules/.bin/tsc",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "build-storybook": "build-storybook --output-dir docs"
   },
   "files": [
     "src/**/*",
