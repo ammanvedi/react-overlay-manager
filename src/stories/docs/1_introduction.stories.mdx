@@ -20,14 +20,14 @@ in a declarative manner. It has the following features;
 6. Events for handling overlays overflowing the viewport
 
 <Canvas>
-    <Story height={'385px'} id="overlay-manager--simple-notifications" />
+    <Story height={'385px'} id="hidden-stories--simple-notifications" />
 </Canvas>
 
 This library is a product of some ideas I have implemented at various workplaces where we needed
 to enable develoers to add overlays to a page without having to worry about testing them
-in every permutation of interaction with other overlays across the site.
+in every permutation or interaction with other overlays across the site.
 
-With this library you should be able to define rules and rest easy knowing that layout will be
+With `react-overlay-manager` you will be able to define rules and rest easy knowing that layout will be
 handled properly.
 
 ## Installation
@@ -47,12 +47,14 @@ For each `Overlay` component we create a portal that we render into a layer abov
 ![Architecture Diagram](https://i.imgur.com/iCPFcnM.png)
 
 ## Performance Considerations
-There is a stress test available to view, you can see that the overlay manager performs
+This is a stress test, you can see that the overlay manager performs
 well even when updates are dispatched to it every 100ms. Layout updates are throttled
 and consecutive updates are dispatched to the end of the event queue to avoid potentially
 starving other code when a-lot of overlays are rendered
 
-
+<Canvas>
+    <Story height={'700px'} id="hidden-stories--stress-test" />
+</Canvas>
 
 
 

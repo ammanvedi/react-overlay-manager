@@ -1,3 +1,36 @@
-import { Meta } from '@storybook/addon-docs';
+import { Meta, Story } from '@storybook/addon-docs';
 
 <Meta title="Documentation/Priorities" />
+
+# Priorities
+
+When you tell an overlay to occupy a position you can also give it an indication where it should
+insert itself in the vertical ordering. You do this through the `priority` prop.
+
+<img height='500px' style={{margin: '0 auto', display: 'block'}} src="https://i.imgur.com/eGZyzhM.png" />
+<br/>
+<br/>
+<br/>
+
+## Example
+
+<Canvas>
+    <Story height={'400px'} id="hidden-stories--simple-priority" />
+</Canvas>
+
+```tsx dark="true"
+import {OverlayContextProvider, Overlay, OverlayPosition} from "./react-overlay-manager";
+
+<OverlayContextProvider>
+    <Overlay id="a" position={OverlayPosition.TOP_FULL_WIDTH} priority={3} >
+        <PlaceholderFullWidthNotification>Priority 3</PlaceholderFullWidthNotification>
+    </Overlay>
+    <Overlay id="b" position={OverlayPosition.TOP_FULL_WIDTH} priority={2} >
+        <PlaceholderFullWidthNotification>Priority 2</PlaceholderFullWidthNotification>
+    </Overlay>
+    <Overlay id="c" position={OverlayPosition.TOP_FULL_WIDTH} priority={1} >
+        <PlaceholderFullWidthNotification>Priority 1</PlaceholderFullWidthNotification>
+    </Overlay>
+</OverlayContextProvider>
+
+```

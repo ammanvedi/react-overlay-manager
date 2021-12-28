@@ -19,6 +19,10 @@ export type OverlayContextType = {
         position: OverlayRecord['position'],
         id: OverlayRecord['id'],
     ) => void;
+    removeOverlay: (
+        position: OverlayRecord['position'],
+        id: OverlayRecord['id'],
+    ) => Promise<void>;
     updateOverlayRecord: (o: OverlayCreationRecord) => void;
     setInset: (inset: InsetRecord) => void;
     removeInset: (insetId: InsetId) => void;

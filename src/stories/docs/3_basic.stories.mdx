@@ -7,9 +7,84 @@ import { Story } from '@storybook/addon-docs';
 
 Here is a basic example of placing one overlay in the center top position
 
-```tsx
+<Canvas>
+    <Story height={'200px'} id="hidden-stories--center-top" />
+</Canvas>
+
+```tsx dark="true"
+import {OverlayContextProvider, Overlay, OverlayPosition} from "./react-overlay-manager";
+
+<OverlayContextProvider>
+    <Overlay id="a" position={OverlayPosition.TOP_CENTER} priority={1}>
+        <PlaceholderNotification />
+    </Overlay>
+</OverlayContextProvider>
 ```
 
+The provider wraps your whole application, and in the place where your overlay is you
+wrap it with an `<Overlay />` giving it an id, position and priority. Which are
+all covered in the following docs.
+
+We are able to position the overlay in the following places;
+
+```tsx dark="true"
+export enum OverlayPosition {
+    TOP_FULL_WIDTH = 'TOP_FULL_WIDTH',
+    BOTTOM_FULL_WIDTH = 'BOTTOM_FULL_WIDTH',
+    TOP_LEFT = 'TOP_LEFT',
+    TOP_CENTER = 'TOP_CENTER',
+    TOP_RIGHT = 'TOP_RIGHT',
+    BOTTOM_LEFT = 'BOTTOM_LEFT',
+    BOTTOM_CENTER = 'BOTTOM_CENTER',
+    BOTTOM_RIGHT = 'BOTTOM_RIGHT',
+}
+```
+
+### Full Width Positions
+Full width positions sit before left, right and center positions. This will be clearer
+in later examples. When using these positions it is sufficient to set the width of
+your component to `width: auto`.
+
+### Non-Full Width Positions
+Left, right and center positions are what they sound like. When adding elements to these
+positions, you will need to make sure you give your element an explicit `width` and
+`height`. Due to implementation details you can't rely on the parent to have any height
+or width, hence the explicit definition.
+
+Let's extend this to place an overlay in every possible position so we can get a better
+idea of where they all sit.
+
 <Canvas>
-    <Story height={'500px'} id="overlay-manager--simple-notifications" />
+    <Story height={'500px'} id="hidden-stories--all-positions" />
 </Canvas>
+
+```tsx dark="true"
+import {OverlayContextProvider} from "./react-overlay-manager";
+
+<OverlayContextProvider>
+    <Overlay id="a" position={OverlayPosition.TOP_FULL_WIDTH} priority={1}>
+        <PlaceholderFullWidthNotification />
+    </Overlay>
+    <Overlay id="b" position={OverlayPosition.BOTTOM_FULL_WIDTH} priority={1}>
+        <PlaceholderFullWidthNotification />
+    </Overlay>
+    <Overlay id="c" position={OverlayPosition.TOP_LEFT} priority={1}>
+        <PlaceholderNotification />
+    </Overlay>
+    <Overlay id="d" position={OverlayPosition.TOP_CENTER} priority={1}>
+        <PlaceholderNotification />
+    </Overlay>
+    <Overlay id="e" position={OverlayPosition.TOP_RIGHT} priority={1}>
+        <PlaceholderNotification />
+    </Overlay>
+    <Overlay id="f" position={OverlayPosition.BOTTOM_LEFT} priority={1}>
+        <PlaceholderNotification />
+    </Overlay>
+    <Overlay id="g" position={OverlayPosition.BOTTOM_CENTER} priority={1}>
+        <PlaceholderNotification />
+    </Overlay>
+    <Overlay id="h" position={OverlayPosition.BOTTOM_RIGHT} priority={1}>
+        <PlaceholderNotification />
+    </Overlay>
+</OverlayContextProvider>
+```

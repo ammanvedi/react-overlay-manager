@@ -49,6 +49,7 @@ const overlayContextDefaultValue: OverlayContextType = Object.freeze({
     setOverlayReady: () => null,
     clear: () => null,
     safeArea: null,
+    removeOverlay: () => Promise.resolve(),
 });
 
 export const OverlayContext = createContext<OverlayContextType>(
@@ -133,6 +134,20 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
             overlayStore.current.set(overlay.id, overlayRecord);
 
             return portalContainerForOverlay;
+        },
+        [],
+    );
+
+    const removeOverlay: OverlayContextType['removeOverlay'] = useCallback(
+        async (position, id) => {
+            const overlay = overlayStore.current.get(id);
+            if (overlay) {
+                await animateElementOut(
+                    overlay.element,
+                    getWidthReference(overlay.element),
+                );
+                unregisterOverlay(position, id);
+            }
         },
         [],
     );
@@ -338,6 +353,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                 recalculateInsets,
                 setOverlayReady,
                 clear,
+                removeOverlay,
             }}
         >
             {children}

@@ -1,10 +1,17 @@
 // @ts-ignore
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { ComponentMeta } from '@storybook/react';
 import { OverlayContext, OverlayContextProvider } from '../overlay-context';
 import { Overlay, OverlayProps } from '../overlay';
 import {
     applyRandomActionToOverlays,
+    getRandCol,
     getRandomEvent,
     mockOverlays,
 } from './data';
@@ -14,10 +21,10 @@ import {
     PlaceholderNotification,
     RandomizablePlaceholderProps,
 } from './placeholder-notification';
-import { getRandCol } from './data';
+import { buttonStyles } from './styles';
 
 export default {
-    title: 'Overlay Manager',
+    title: 'Hidden Stories',
     component: OverlayContextProvider,
 } as ComponentMeta<any>;
 
@@ -31,6 +38,151 @@ const navStyles: React.CSSProperties = {
 
 const pageStyles: React.CSSProperties = {
     height: '120vh',
+};
+
+export const CenterTop = () => {
+    return (
+        <Overlay id="a" position={OverlayPosition.TOP_CENTER} priority={1}>
+            <PlaceholderNotification id="a" bgColor={getRandCol()}>
+                Overlay A
+            </PlaceholderNotification>
+        </Overlay>
+    );
+};
+
+export const AllPositions = () => {
+    return (
+        <>
+            <Overlay
+                id="a"
+                position={OverlayPosition.TOP_FULL_WIDTH}
+                priority={1}
+            >
+                <PlaceholderFullWidthNotification id="a" bgColor={getRandCol()}>
+                    Overlay A
+                </PlaceholderFullWidthNotification>
+            </Overlay>
+            <Overlay
+                id="b"
+                position={OverlayPosition.BOTTOM_FULL_WIDTH}
+                priority={1}
+            >
+                <PlaceholderFullWidthNotification id="b" bgColor={getRandCol()}>
+                    Overlay B
+                </PlaceholderFullWidthNotification>
+            </Overlay>
+            <Overlay id="c" position={OverlayPosition.TOP_LEFT} priority={1}>
+                <PlaceholderNotification id="c" bgColor={getRandCol()}>
+                    Overlay C
+                </PlaceholderNotification>
+            </Overlay>
+            <Overlay id="d" position={OverlayPosition.TOP_CENTER} priority={1}>
+                <PlaceholderNotification id="d" bgColor={getRandCol()}>
+                    Overlay D
+                </PlaceholderNotification>
+            </Overlay>
+            <Overlay id="e" position={OverlayPosition.TOP_RIGHT} priority={1}>
+                <PlaceholderNotification id="e" bgColor={getRandCol()}>
+                    Overlay E
+                </PlaceholderNotification>
+            </Overlay>
+            <Overlay id="f" position={OverlayPosition.BOTTOM_LEFT} priority={1}>
+                <PlaceholderNotification id="f" bgColor={getRandCol()}>
+                    Overlay F
+                </PlaceholderNotification>
+            </Overlay>
+            <Overlay
+                id="g"
+                position={OverlayPosition.BOTTOM_CENTER}
+                priority={1}
+            >
+                <PlaceholderNotification id="g" bgColor={getRandCol()}>
+                    Overlay G
+                </PlaceholderNotification>
+            </Overlay>
+            <Overlay
+                id="h"
+                position={OverlayPosition.BOTTOM_RIGHT}
+                priority={1}
+            >
+                <PlaceholderNotification id="h" bgColor={getRandCol()}>
+                    Overlay H
+                </PlaceholderNotification>
+            </Overlay>
+        </>
+    );
+};
+
+export const SimplePriority = () => {
+    const { removeOverlay } = useContext(OverlayContext);
+    const [show, setShow] = useState(false);
+    const toggleInsert = () => {
+        removeOverlay(OverlayPosition.TOP_FULL_WIDTH, 'e').then(() => {
+            setShow((s) => !s);
+        });
+    };
+
+    const aCol = useMemo(getRandCol, []);
+    const bCol = useMemo(getRandCol, []);
+    const cCol = useMemo(getRandCol, []);
+    const dCol = useMemo(getRandCol, []);
+    const eCol = useMemo(getRandCol, []);
+
+    return (
+        <>
+            <Overlay
+                id="a"
+                position={OverlayPosition.TOP_FULL_WIDTH}
+                priority={4}
+            >
+                <PlaceholderFullWidthNotification id="a" bgColor={aCol}>
+                    Priority 4
+                </PlaceholderFullWidthNotification>
+            </Overlay>
+            <Overlay
+                id="b"
+                position={OverlayPosition.TOP_FULL_WIDTH}
+                priority={2}
+            >
+                <PlaceholderFullWidthNotification id="b" bgColor={bCol}>
+                    Priority 2
+                </PlaceholderFullWidthNotification>
+            </Overlay>
+            <Overlay
+                id="c"
+                position={OverlayPosition.TOP_FULL_WIDTH}
+                priority={1}
+            >
+                <PlaceholderFullWidthNotification id="c" bgColor={cCol}>
+                    Priority 1
+                </PlaceholderFullWidthNotification>
+            </Overlay>
+            {show && (
+                <Overlay
+                    id="e"
+                    position={OverlayPosition.TOP_FULL_WIDTH}
+                    priority={3}
+                >
+                    <PlaceholderFullWidthNotification id="e" bgColor={eCol}>
+                        Priority 3
+                    </PlaceholderFullWidthNotification>
+                </Overlay>
+            )}
+            <Overlay
+                id="d"
+                position={OverlayPosition.BOTTOM_FULL_WIDTH}
+                priority={1}
+            >
+                <div style={{ marginBottom: 20 }}>
+                    <button onClick={toggleInsert} style={buttonStyles}>
+                        {show
+                            ? 'Hide Overlay With Priority 3'
+                            : 'Add Overlay With Priority 3'}
+                    </button>
+                </div>
+            </Overlay>
+        </>
+    );
 };
 
 const Story = () => {
@@ -85,8 +237,7 @@ const Story = () => {
     );
 };
 
-const SimpleStory = () => {
-    document.body.style.backgroundColor = '#6c5ce7';
+export const SimpleStory = () => {
     const { setInset, clear, recalculateInsets } = useContext(OverlayContext);
 
     return (
@@ -149,7 +300,6 @@ const InsetStory = () => {
 
     useEffect(() => {
         window.addEventListener('scroll', recalculateInsets);
-        document.body.style.backgroundColor = '#6c5ce7';
 
         return () => {
             clear();

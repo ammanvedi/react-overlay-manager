@@ -1,4 +1,13 @@
 import * as React from 'react';
+import {
+    notificationContainer,
+    notificationImg,
+    notificationImgContainer,
+    notificationText,
+    notificationTextBottom,
+    notificationTextContainer,
+    notificationTextTop,
+} from './styles';
 
 export interface PlaceholderProps extends RandomizablePlaceholderProps {
     id: string;
@@ -16,67 +25,23 @@ export const PlaceholderNotification: React.FC<PlaceholderProps> = ({
     return (
         <div
             style={{
-                width: 280,
-                padding: 10,
-                borderRadius: 8,
-                border: '3px solid black',
-                boxSizing: 'border-box',
-                margin: 5,
+                ...notificationContainer,
                 backgroundColor: bgColor,
-                display: 'flex',
-                flexDirection: 'row',
             }}
         >
-            <div
-                style={{
-                    flex: '0 0 auto',
-                }}
-            >
+            <div style={notificationImgContainer}>
                 <img
-                    style={{
-                        width: 40,
-                        height: 40,
-                        margin: 0,
-                        padding: 0,
-                    }}
+                    style={notificationImg}
                     src={`https://joeschmoe.io/api/v1/${id}`}
                 />
             </div>
-            <div
-                style={{
-                    flex: '1 1 auto',
-                    marginLeft: 10,
-                }}
-            >
+            <div style={notificationTextContainer}>
                 {children ? (
-                    <div
-                        style={{
-                            fontFamily: 'helvetica, arial, sans-serif',
-                            fontWeight: 'bold',
-                            color: '#212121',
-                        }}
-                    >
-                        {children}
-                    </div>
+                    <div style={notificationText}>{children}</div>
                 ) : (
                     <>
-                        <div
-                            style={{
-                                height: 15,
-                                width: '70%',
-                                backgroundColor: 'black',
-                                borderRadius: 4,
-                            }}
-                        ></div>
-                        <div
-                            style={{
-                                height: 15,
-                                width: '40%',
-                                backgroundColor: 'black',
-                                marginTop: 5,
-                                borderRadius: 4,
-                            }}
-                        ></div>
+                        <div style={notificationTextTop} />
+                        <div style={notificationTextBottom} />
                     </>
                 )}
             </div>
@@ -87,71 +52,32 @@ export const PlaceholderNotification: React.FC<PlaceholderProps> = ({
 export const PlaceholderFullWidthNotification: React.FC<PlaceholderProps> = ({
     id,
     bgColor,
+    children,
 }) => {
     return (
         <div
             style={{
-                padding: 10,
-                borderRadius: 8,
-                border: '3px solid black',
-                boxSizing: 'border-box',
-                margin: 5,
+                ...notificationContainer,
+                width: 'auto',
                 backgroundColor: bgColor,
-                display: 'flex',
-                flexDirection: 'row',
             }}
         >
-            <div
-                style={{
-                    flex: '0 0 auto',
-                }}
-            >
+            <div style={notificationImgContainer}>
                 <img
-                    style={{
-                        width: 40,
-                        height: 40,
-                        margin: 0,
-                        padding: 0,
-                    }}
+                    style={notificationImg}
                     src={`https://joeschmoe.io/api/v1/${id}`}
                 />
             </div>
-            <div
-                style={{
-                    flex: '1 1 auto',
-                    marginLeft: 10,
-                }}
-            >
-                <div
-                    style={{
-                        height: 15,
-                        width: '70%',
-                        backgroundColor: 'gray',
-                        borderRadius: 4,
-                    }}
-                ></div>
-                <div
-                    style={{
-                        height: 15,
-                        width: '40%',
-                        backgroundColor: 'gray',
-                        marginTop: 5,
-                        borderRadius: 4,
-                    }}
-                ></div>
+            <div style={notificationTextContainer}>
+                {children ? (
+                    <div style={notificationText}>{children}</div>
+                ) : (
+                    <>
+                        <div style={notificationTextTop} />
+                        <div style={notificationTextBottom} />
+                    </>
+                )}
             </div>
         </div>
     );
 };
-
-export const L: React.FC = ({ children }) => (
-    <div
-        style={{
-            height: 100,
-            width: 100,
-        }}
-        id={'poop'}
-    >
-        {children[0]}
-    </div>
-);
