@@ -1,0 +1,78 @@
+import { Meta, Story } from '@storybook/addon-docs';
+
+<Meta title="Documentation/Removal" />
+
+# Removal
+You have the ability to remove overlays from the view. Here are the methods available to achieve that.
+
+
+## Manual Removal
+
+The `OverlayContextProvider` exports a function `removeOverlay` with the signature
+
+```ts dark="true"
+(id: string) => Promise<void>
+```
+
+It can be used as such
+
+```tsx dark="true"
+import {useContext, useState} from "react";
+import {OverlayContext, OverlayPosition, Overlay} from "react-overlay-manager";
+
+const RemovalExample = () => {
+    const { removeOverlay } = useContext(OverlayContext);
+    const [show, setShow] = useState(true);
+    const toggleInsert = () => {
+        /**
+         * We need to call removeOverlay and wait for the promise to resolve before
+         * we can set the state that unmounts the component. During this
+         * time the overlay manager will gracefully animate the overlay out
+        */
+        removeOverlay('a').then(() => {
+            setShow((s) => !s);
+        });
+    };
+
+    return (
+        <>
+            {show && (
+                <Overlay
+                    id="a"
+                    position={OverlayPosition.TOP_FULL_WIDTH}
+                    priority={4}
+                >
+                    Hello World!
+                </Overlay>
+            )}
+            <button onClick={toggleInsert}>
+                {show ? 'Hide Overlay' : 'Add Overlay'}
+            </button>
+        </>
+    );
+}
+```
+
+And the result;
+
+<Story height='300px' id="hidden-stories--manual-removal" />
+
+## Timeouts
+
+If you prefer you can also set a timeout on the overlay. Although if you choose to take this approach please
+be aware of the impact on [accessibility](https://accessibility.huit.harvard.edu/give-users-control-over-timeouts)
+
+The following example shows overlays that will disappear after 3 seconds
+
+<Story height='200px' id="hidden-stories--simple-timeout" />
+
+```tsx dark="true"
+<Overlay
+    id={id}
+    position={OverlayPosition.TOP_FULL_WIDTH}
+    priority={4}
+    hideAfterMs={3000}
+>
+    ...
+</Overlay>
+```

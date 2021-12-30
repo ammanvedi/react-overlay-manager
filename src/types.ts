@@ -21,7 +21,7 @@ export type OverlayContextType = {
     setInset: (inset: InsetRecord) => void;
     removeInset: (insetId: InsetId) => void;
     recalculateInsets: () => void;
-    setOverlayReady: () => void;
+    setOverlayReady: (id: OverlayId) => void;
     clear: () => void;
 };
 
@@ -29,6 +29,7 @@ export interface OverlayCreationRecord {
     position: OverlayPosition;
     priority: number;
     id: OverlayId;
+    hideAfterMs?: number;
 }
 
 export interface Translation {
@@ -40,6 +41,7 @@ export interface OverlayRecord {
     id: OverlayId;
     priority: number;
     element: HTMLElement;
+    hideAfterMs?: number;
     position: {
         original: Readonly<OverlayPosition>;
         current: OverlayPosition | null;

@@ -44,9 +44,12 @@ your component to `width: auto`.
 
 ### Non-Full Width Positions
 Left, right and center positions are what they sound like. When adding elements to these
-positions, you will need to make sure you give your element an explicit `width` and
+positions, you will need to make sure you give your element an explicit `min-width` and
 `height`. Due to implementation details you can't rely on the parent to have any height
 or width, hence the explicit definition.
+
+Setting the `min-width` will mean that if you decide to transition this to the full
+width containers the width will be able to change accordingly.
 
 Let's extend this to place an overlay in every possible position so we can get a better
 idea of where they all sit.

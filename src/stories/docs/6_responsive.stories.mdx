@@ -3,12 +3,48 @@ import { Meta, Story } from '@storybook/addon-docs';
 <Meta title="Documentation/Responsive"/>
 
 # Responsive
+Based on a media query we can move the position that an overlay sits in. We
+may want to do this to prevent overlays from overlapping each other for example.
 
-Assume we have the following setup, three overlays
+We do this by passing a `ResponsiveRules` object to the `OverlayContextProvider`
+
+```tsx dark="true"
+import {OverlayContextProvider, ResponsiveRules, OverlayPosition} from "react-overlay-manager";
+
+export const rr: ResponsiveRules = {
+    [OverlayPosition.TOP_RIGHT]: {
+        '(max-width: 900px)': OverlayPosition.TOP_FULL_WIDTH,
+    },
+    [OverlayPosition.TOP_LEFT]: {
+        '(max-width: 900px)': OverlayPosition.TOP_FULL_WIDTH,
+    },
+    [OverlayPosition.TOP_CENTER]: {
+        '(max-width: 900px)': OverlayPosition.TOP_FULL_WIDTH,
+    },
+};
+
+<OverlayContextProvider responsiveRules={rr}>
+    ...
+</OverlayContextProvider>
+```
+
+As you can see for each position we create a map of media query (one that can be evaluated
+by [window.matchMedia](https://developer.mozilla.org/en-US/docs/Web/API/Window/matchMedia)) to another position.
+
+You can see the result of the above configuration on different screen widths
+below
 
 <div class='resp-wrap'>
     <div class='resp-desktop'>
         <h2 class='resp-text'>Desktop</h2>
         <Story height='300px' id='hidden-stories--responsive-story' />
+    </div>
+    <div class='resp-tablet'>
+        <h2 class='resp-text'>Tablet</h2>
+        <Story height='500px' id='hidden-stories--responsive-story' />
+    </div>
+    <div class='resp-mobile'>
+        <h2 class='resp-text'>Mobile</h2>
+        <Story height='500px' id='hidden-stories--responsive-story' />
     </div>
 </div>

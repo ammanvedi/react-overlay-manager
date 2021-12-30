@@ -66,8 +66,10 @@ export const animateElementIn = (
     el.style.opacity = '0';
     el.style.overflow = 'hidden';
 
-    return transitionProperty(el, 'height', '0px', `${height}px`)
-        .then(() => transitionProperty(el, 'opacity', '0', '1'))
+    return transitionProperty(el, 'height', '0px', transitionNumber(0, height))
+        .then(() =>
+            transitionProperty(el, 'opacity', '0px', transitionOpacityIn),
+        )
         .then(() => {
             el.style.height = 'auto';
             el.style.width = finalWidth;
@@ -92,8 +94,15 @@ export const animateElementOut = (
     el.style.opacity = '1';
     el.style.overflow = 'hidden';
 
-    return transitionProperty(el, 'opacity', '1', '0')
-        .then(() => transitionProperty(el, 'height', `${height}px`, '0px'))
+    return transitionProperty(el, 'opacity', '0', transitionOpacityOut)
+        .then(() =>
+            transitionProperty(
+                el,
+                'height',
+                `${height}px`,
+                transitionNumber(height, 0),
+            ),
+        )
         .then(() => {
             el.style.width = finalWidth;
             el.style.height = '0';
@@ -102,6 +111,30 @@ export const animateElementOut = (
         });
 };
 
+export const transitionNumber = (
+    initial: number,
+    target: number,
+    suffix = 'px',
+) => {
+    const diff = target - initial;
+
+    return (pct: number) => {
+        return `${initial + pct * diff}${suffix}`;
+    };
+};
+
+export const transitionOpacityIn = (pct: number): string => {
+    return Math.min(1, pct).toString();
+};
+
+export const transitionOpacityOut = (pct: number): string => {
+    return Math.max(0, 1 - pct).toString();
+};
+
+/**
+ * We use requestAnimationFrame as it seems to be more reliable than
+ * doing the transition in css and listening for events
+ */
 export const transitionProperty = (
     el: HTMLElement,
     property: Exclude<
@@ -115,37 +148,37 @@ export const transitionProperty = (
         | 'setProperty'
     >,
     initial: string,
-    target: string,
+    getTargetForPercentageStep: (pct: number) => string,
+    duration = 300,
 ): Promise<void> => {
     el.style[property] = initial;
-    console.log(
-        'requested transition on',
-        property,
-        'current',
-        el.style[property],
-        'to',
-        target,
-    );
+    return new Promise((res) => {
+        let start: DOMHighResTimeStamp | null = null;
+        let lastTs: DOMHighResTimeStamp | null = null;
+        const max = getTargetForPercentageStep(1);
 
-    const resultPromise: Promise<void> = new Promise((res) => {
-        const handler = () => {
-            console.log('promise resolved', property);
-            res();
-            el.removeEventListener('transitionend', handler);
+        const raf = (ts: DOMHighResTimeStamp) => {
+            if (start === null) {
+                start = ts;
+            }
+            const elapsed = ts - start;
+
+            if (ts !== lastTs) {
+                const progress = elapsed / duration;
+                el.style[property] = getTargetForPercentageStep(progress);
+            }
+
+            if (elapsed < duration) {
+                lastTs = ts;
+                window.requestAnimationFrame(raf);
+            } else {
+                el.style[property] = getTargetForPercentageStep(1);
+                res();
+            }
         };
-        console.log('adding listener');
-        el.addEventListener('transitionend', handler);
 
-        /**
-         * Now hear me out on this one, the transitions dont seem to work so well
-         * when the transition property is set immediately. So here we shove this to
-         * the back of the event queue and let it be called when the call stack is
-         * emptied at some later time.
-         */
-        el.style[property] = target;
+        window.requestAnimationFrame(raf);
     });
-
-    return resultPromise;
 };
 
 export const getFinalWidth = (p: OverlayPosition | null): string => {

@@ -1,4 +1,3 @@
-// @ts-ignore
 import React, {
     useCallback,
     useContext,
@@ -112,6 +111,70 @@ export const AllPositions = () => {
     );
 };
 
+export const ManualRemoval = () => {
+    const { removeOverlay } = useContext(OverlayContext);
+    const [show, setShow] = useState(true);
+    const toggleInsert = () => {
+        removeOverlay('a').then(() => {
+            setShow((s) => !s);
+        });
+    };
+
+    return (
+        <>
+            {show && (
+                <Overlay
+                    id="a"
+                    position={OverlayPosition.TOP_FULL_WIDTH}
+                    priority={4}
+                >
+                    <PlaceholderFullWidthNotification
+                        id="a"
+                        bgColor={getRandCol()}
+                    >
+                        Hello World!
+                    </PlaceholderFullWidthNotification>
+                </Overlay>
+            )}
+            <Overlay
+                id="d"
+                position={OverlayPosition.BOTTOM_FULL_WIDTH}
+                priority={1}
+            >
+                <div style={{ marginBottom: 20 }}>
+                    <button onClick={toggleInsert} style={buttonStyles}>
+                        {show ? 'Hide Overlay' : 'Add Overlay'}
+                    </button>
+                </div>
+            </Overlay>
+        </>
+    );
+};
+
+export const SimpleTimeout = () => {
+    const [id, setId] = useState(0);
+
+    useEffect(() => {
+        setInterval(() => {
+            setId((i) => i + 1);
+        }, 4000);
+    }, []);
+
+    return (
+        <Overlay
+            key={id}
+            id={id.toString()}
+            position={OverlayPosition.TOP_FULL_WIDTH}
+            priority={4}
+            hideAfterMs={3000}
+        >
+            <PlaceholderFullWidthNotification id="a" bgColor={getRandCol()}>
+                Overlay Number {id}
+            </PlaceholderFullWidthNotification>
+        </Overlay>
+    );
+};
+
 export const SimplePriority = () => {
     const { removeOverlay } = useContext(OverlayContext);
     const [show, setShow] = useState(false);
@@ -186,9 +249,9 @@ export const SimplePriority = () => {
 
 const Story = () => {
     const [overlays, setOverlays] =
-        useState<Array<OverlayProps & RandomizablePlaceholderProps>>(
-            mockOverlays,
-        );
+        useState<
+            Array<Omit<OverlayProps, 'children'> & RandomizablePlaceholderProps>
+        >(mockOverlays);
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -292,11 +355,11 @@ export const SimpleStory = () => {
 export const InsetStory = () => {
     const { setInset, recalculateInsets, clear } = useContext(OverlayContext);
     const [overlays, setOverlays] = useState<
-        Array<OverlayProps & RandomizablePlaceholderProps>
+        Array<Omit<OverlayProps, 'children'> & RandomizablePlaceholderProps>
     >(mockOverlays.slice(0, 6));
 
     useEffect(() => {
-        const container = document.querySelector('.story-wrap');
+        const container = document.querySelector('.story-wrap') as HTMLElement;
         if (container) {
             container.style.overflow = 'visible';
             document.body.style.backgroundColor = '#6c5ce7';
@@ -373,16 +436,16 @@ export const ResponsiveStory = () => {
                     Overlay A
                 </PlaceholderNotification>
             </Overlay>
-            {/*<Overlay id="b" position={OverlayPosition.TOP_CENTER} priority={1}>*/}
-            {/*    <PlaceholderNotification id="b" bgColor={bCol}>*/}
-            {/*        Overlay B*/}
-            {/*    </PlaceholderNotification>*/}
-            {/*</Overlay>*/}
-            {/*<Overlay id="c" position={OverlayPosition.TOP_RIGHT} priority={1}>*/}
-            {/*    <PlaceholderNotification id="c" bgColor={cCol}>*/}
-            {/*        Overlay C*/}
-            {/*    </PlaceholderNotification>*/}
-            {/*</Overlay>*/}
+            <Overlay id="b" position={OverlayPosition.TOP_CENTER} priority={1}>
+                <PlaceholderNotification id="b" bgColor={bCol}>
+                    Overlay B
+                </PlaceholderNotification>
+            </Overlay>
+            <Overlay id="c" position={OverlayPosition.TOP_RIGHT} priority={1}>
+                <PlaceholderNotification id="c" bgColor={cCol}>
+                    Overlay C
+                </PlaceholderNotification>
+            </Overlay>
         </>
     );
 };

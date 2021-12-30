@@ -20,6 +20,10 @@ export interface OverlayProps {
      * There should be a single child, the component that you need to overlay
      */
     children: ReactNode;
+    /**
+     * A number of milliseconds after which the overlay will be removed
+     */
+    hideAfterMs?: number;
 }
 
 export const Overlay: React.FC<OverlayProps> = ({
@@ -27,6 +31,7 @@ export const Overlay: React.FC<OverlayProps> = ({
     id,
     position,
     priority,
+    hideAfterMs,
 }) => {
     const {
         registerOverlay,
@@ -39,6 +44,7 @@ export const Overlay: React.FC<OverlayProps> = ({
             id,
             position,
             priority,
+            hideAfterMs,
         }),
     );
 
@@ -47,24 +53,28 @@ export const Overlay: React.FC<OverlayProps> = ({
      */
 
     useEffect(() => {
-        /**
-         * It may take some time for react to place the portal in this
-         * child element, so lets wait for that to happen and then trigger
-         * a layout refresh.
-         */
-        const observer = new MutationObserver((mutations) => {
-            for (const mutation of mutations) {
-                if (
-                    mutation.type === 'childList' &&
-                    portalWrapper.children.length >= 1
-                ) {
-                    setOverlayReady();
+        if (portalWrapper.children.length) {
+            setOverlayReady(id);
+        } else {
+            /**
+             * It may take some time for react to place the portal in this
+             * child element, so lets wait for that to happen and then trigger
+             * a layout refresh.
+             */
+            const observer = new MutationObserver((mutations) => {
+                for (const mutation of mutations) {
+                    if (
+                        mutation.type === 'childList' &&
+                        portalWrapper.children.length >= 1
+                    ) {
+                        setOverlayReady(id);
+                    }
                 }
-            }
-            observer.disconnect();
-        });
+                observer.disconnect();
+            });
 
-        observer.observe(portalWrapper, { childList: true });
+            observer.observe(portalWrapper, { childList: true });
+        }
 
         return () => {
             unregisterOverlay(id);

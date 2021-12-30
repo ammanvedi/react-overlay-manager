@@ -43,10 +43,12 @@ export const decorators = [
          * I want to be able to have only MDX pages without any actual stories being listed
          * because they dont actually make any sense without the MDX.
          */
-        const menuItem = window.parent.parent.document.querySelector(
-            '[data-item-id="hidden-stories"]',
-        );
-        menuItem.style.display = 'none';
+        const hideItems = ['[data-item-id="hidden-stories"]', '.search-field'];
+        hideItems.map((i) => {
+            const itm = window.parent.parent.document.querySelector(i);
+            itm.style.display = 'none';
+        });
+
         return (
             <OverlayContextProvider responsiveRules={rRules}>
                 <div className="story-wrap">

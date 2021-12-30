@@ -19,6 +19,7 @@ export const DEFAULT_PORTAL_WRAPPER_TAG: keyof HTMLElementTagNameMap = 'div';
 
 export const BASE_CSS = css`
     .overlay {
+        pointer-events: none;
         position: fixed;
         inset: 0;
         transition: 0.2s ease-out inset;
@@ -91,9 +92,9 @@ export const BASE_CSS = css`
     }
 
     .overlay-wrapper {
+        pointer-events: all;
         width: 100%;
         opacity: 0;
-        transition: 0.3s ease-out height, 0.3s ease-out opacity;
     }
 
     .overlay-wrapper > * {

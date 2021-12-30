@@ -128,6 +128,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                 id: overlay.id,
                 priority: overlay.priority,
                 element: portalContainerForOverlay,
+                hideAfterMs: overlay.hideAfterMs,
                 position: {
                     original: overlay.position as Readonly<OverlayPosition>,
                     current: null,
@@ -145,6 +146,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
     const removeOverlay: OverlayContextType['removeOverlay'] = useCallback(
         async (id) => {
             const overlay = overlayExists(id, overlayStore.current);
+
             if (overlay) {
                 await animateElementOut(
                     overlay.element,
@@ -215,7 +217,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                                 animateElementIn(
                                     overlay.element,
                                     getWidthReference(overlay.element),
-                                    getFinalWidth(overlay),
+                                    getFinalWidth(overlay.position.desired),
                                 ).then(() => {
                                     overlay.position.current = position;
                                 }),
@@ -355,10 +357,24 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
             }
         }, []);
 
-    const setOverlayReady: OverlayContextType['setOverlayReady'] =
-        useCallback(() => {
-            recalculateLayout();
-        }, []);
+    const setOverlayReady: OverlayContextType['setOverlayReady'] = useCallback(
+        (id) => {
+            const overlay = overlayExists(id, overlayStore.current);
+
+            if (overlay) {
+                recalculateLayout();
+
+                if (!overlay.hideAfterMs) {
+                    return;
+                }
+
+                setTimeout(() => {
+                    removeOverlay(id);
+                }, overlay.hideAfterMs);
+            }
+        },
+        [],
+    );
 
     return (
         <OverlayContext.Provider
