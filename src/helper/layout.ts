@@ -125,12 +125,12 @@ export const putOverlaysInContainers = (
     // as the reasoning above probably doesnt make sense any more
     const result: OverlayLayoutStore = getNewLayoutStore();
     overlayStore.forEach((overlay) => {
-        const resConfig = responsiveRules[overlay.position];
+        const resConfig = responsiveRules[overlay.position.original];
 
         const destinationPosition =
             (resConfig
                 ? getPositionForMatchMedia(resConfig)
-                : overlay.position) || overlay.position;
+                : overlay.position.original) || overlay.position.original;
 
         addToLayoutStore(result, destinationPosition, overlay, overlayStore);
     });

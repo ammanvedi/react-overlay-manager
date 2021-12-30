@@ -19,9 +19,7 @@ in a declarative manner. It has the following features;
 5. Define rules for positioning overlay based on media queries
 6. Events for handling overlays overflowing the viewport
 
-<Canvas>
-    <Story height={'385px'} id="hidden-stories--simple-notifications" />
-</Canvas>
+<Story height={'385px'} id="hidden-stories--simple-notifications" />
 
 This library is a product of some ideas I have implemented at various workplaces where we needed
 to enable develoers to add overlays to a page without having to worry about testing them
@@ -46,15 +44,15 @@ For each `Overlay` component we create a portal that we render into a layer abov
 
 ![Architecture Diagram](https://i.imgur.com/iCPFcnM.png)
 
+
+
 ## Performance Considerations
 This is a stress test, you can see that the overlay manager performs
 well even when updates are dispatched to it every 100ms. Layout updates are throttled
 and consecutive updates are dispatched to the end of the event queue to avoid potentially
 starving other code when a-lot of overlays are rendered
 
-<Canvas>
-    <Story height={'700px'} id="hidden-stories--stress-test" />
-</Canvas>
+<Story height={'700px'} id="hidden-stories--stress-test" />
 
 
 

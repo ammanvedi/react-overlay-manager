@@ -15,7 +15,7 @@ export const buttonStyles: React.CSSProperties = {
 };
 
 export const notificationContainer: React.CSSProperties = {
-    width: 280,
+    minWidth: 280,
     padding: 10,
     borderRadius: 8,
     border: '3px solid black',

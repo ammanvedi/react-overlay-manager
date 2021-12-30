@@ -15,14 +15,8 @@ export type InsetId = string;
 export type OverlayContextType = {
     safeArea: SafeAreaRect | null;
     registerOverlay: (o: OverlayCreationRecord) => HTMLElement;
-    unregisterOverlay: (
-        position: OverlayRecord['position'],
-        id: OverlayRecord['id'],
-    ) => void;
-    removeOverlay: (
-        position: OverlayRecord['position'],
-        id: OverlayRecord['id'],
-    ) => Promise<void>;
+    unregisterOverlay: (id: OverlayRecord['id']) => void;
+    removeOverlay: (id: OverlayRecord['id']) => Promise<void>;
     updateOverlayRecord: (o: OverlayCreationRecord) => void;
     setInset: (inset: InsetRecord) => void;
     removeInset: (insetId: InsetId) => void;
@@ -42,11 +36,15 @@ export interface Translation {
     y: number;
 }
 
-export interface OverlayRecord extends OverlayCreationRecord {
+export interface OverlayRecord {
+    id: OverlayId;
+    priority: number;
     element: HTMLElement;
-    translation: Translation | null;
-    rect: DOMRect | null;
-    currentMountedPosition: OverlayPosition | null;
+    position: {
+        original: Readonly<OverlayPosition>;
+        current: OverlayPosition | null;
+        desired: OverlayPosition | null;
+    };
 }
 
 export type InsetRecord = {

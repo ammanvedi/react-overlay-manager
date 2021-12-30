@@ -82,6 +82,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
      *
      * It might be easier to read as i think a-lot of the useRef and
      * useCallback is actually a layer of indirection we maybe dont need
+     *
      */
     const overlayLayoutStore = useRef<OverlayLayoutStore>(getNewLayoutStore());
     const overlaySideInsetStore = useRef<OverlaySideInsetStore>(
@@ -104,7 +105,6 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
             );
             if (existingOverlay) {
                 return existingOverlay.element;
-                //throw new Error(OverlayError.OVERLAY_EXISTS_ALREADY);
             }
 
             /**
@@ -125,10 +125,14 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
 
             const overlayRecord: OverlayRecord = {
                 ...overlay,
-                currentMountedPosition: null,
+                id: overlay.id,
+                priority: overlay.priority,
                 element: portalContainerForOverlay,
-                rect: null,
-                translation: null,
+                position: {
+                    original: overlay.position as Readonly<OverlayPosition>,
+                    current: null,
+                    desired: null,
+                },
             };
 
             overlayStore.current.set(overlay.id, overlayRecord);
@@ -139,28 +143,30 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
     );
 
     const removeOverlay: OverlayContextType['removeOverlay'] = useCallback(
-        async (position, id) => {
-            const overlay = overlayStore.current.get(id);
+        async (id) => {
+            const overlay = overlayExists(id, overlayStore.current);
             if (overlay) {
                 await animateElementOut(
                     overlay.element,
                     getWidthReference(overlay.element),
+                    getFinalWidth(overlay.position.current),
                 );
-                unregisterOverlay(position, id);
+                unregisterOverlay(id);
             }
         },
         [],
     );
 
     const unregisterOverlay: OverlayContextType['unregisterOverlay'] =
-        useCallback((position, id) => {
-            if (overlayExists(id, overlayStore.current)) {
+        useCallback((id) => {
+            const overlay = overlayExists(id, overlayStore.current);
+            if (overlay && overlay.position.current) {
                 overlayLayoutStore.current.set(
-                    position,
+                    overlay.position.current,
                     removeOverlayFromList(
                         id,
                         overlayLayoutStore.current.get(
-                            position,
+                            overlay.position.current,
                         ) as Array<OverlayId>,
                         overlayStore.current,
                     ),
@@ -186,30 +192,33 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                         return;
                     }
 
+                    overlay.position.desired = position;
+
                     /**
                      * If the mount point is going to change then animate the
                      * element out
                      */
                     const hasBeenMountedToDom =
-                        overlay.currentMountedPosition !== null;
+                        overlay.position.current !== null;
 
                     if (!hasBeenMountedToDom) {
                         container.appendChild(overlay.element);
                     }
 
                     const mountPointChanged =
-                        overlay.currentMountedPosition !== position;
+                        overlay.position.current !== overlay.position.desired;
 
                     if (mountPointChanged) {
-                        if (overlay.currentMountedPosition === null) {
-                            overlay.currentMountedPosition = position;
+                        if (overlay.position.current === null) {
                             container.appendChild(overlay.element);
                             animationPromises.push(
                                 animateElementIn(
                                     overlay.element,
                                     getWidthReference(overlay.element),
                                     getFinalWidth(overlay),
-                                ),
+                                ).then(() => {
+                                    overlay.position.current = position;
+                                }),
                             );
                         } else {
                             /**
@@ -226,6 +235,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                                 animateElementOut(
                                     overlay.element,
                                     getWidthReference(overlay.element),
+                                    getFinalWidth(overlay.position.desired),
                                 )
                                     .then(() => {
                                         /**
@@ -240,8 +250,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                                             return;
                                         }
 
-                                        _overlay.currentMountedPosition =
-                                            position;
+                                        _overlay.position.current = position;
 
                                         insertAtCorrectPosition(
                                             _overlay.id,
@@ -251,14 +260,21 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                                                 position,
                                             ) || [],
                                         );
+
+                                        return Promise.resolve(_overlay);
                                     })
-                                    .then(() =>
+                                    .then((_overlay) => {
+                                        if (!_overlay) {
+                                            return;
+                                        }
                                         animateElementIn(
-                                            overlay.element,
-                                            getWidthReference(overlay.element),
-                                            getFinalWidth(overlay),
-                                        ),
-                                    ),
+                                            _overlay.element,
+                                            getWidthReference(_overlay.element),
+                                            getFinalWidth(
+                                                _overlay.position.desired,
+                                            ),
+                                        );
+                                    }),
                             );
                         }
 
@@ -327,10 +343,13 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
         useCallback(({ id, ...newRecord }) => {
             const overlay = overlayStore.current.get(id);
             if (overlay) {
-                overlayStore.current.set(id, {
-                    ...overlay,
-                    ...newRecord,
-                });
+                /**
+                 * Its important here that we dont change the reference to the
+                 * object by creating a new one!
+                 */
+                overlay.priority = newRecord.priority;
+                overlay.position.desired = newRecord.position;
+                overlay.position.original = newRecord.position;
 
                 recalculateLayout();
             }

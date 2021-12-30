@@ -14,9 +14,11 @@ insert itself in the vertical ordering. You do this through the `priority` prop.
 
 ## Example
 
-<Canvas>
-    <Story height={'400px'} id="hidden-stories--simple-priority" />
-</Canvas>
+We have some overlays and as you can see they are ordered as described
+above. You can add a new overlay using the button provided and see how
+it gets added at the correct position.
+
+<Story height={'400px'} id="hidden-stories--simple-priority" />
 
 ```tsx dark="true"
 import {OverlayContextProvider, Overlay, OverlayPosition} from "./react-overlay-manager";

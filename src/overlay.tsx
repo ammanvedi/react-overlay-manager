@@ -67,7 +67,7 @@ export const Overlay: React.FC<OverlayProps> = ({
         observer.observe(portalWrapper, { childList: true });
 
         return () => {
-            unregisterOverlay(position, id);
+            unregisterOverlay(id);
         };
     }, []);
 

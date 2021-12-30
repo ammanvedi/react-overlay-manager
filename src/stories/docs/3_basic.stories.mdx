@@ -6,10 +6,7 @@ import { Story } from '@storybook/addon-docs';
 # Basic Usage
 
 Here is a basic example of placing one overlay in the center top position
-
-<Canvas>
-    <Story height={'200px'} id="hidden-stories--center-top" />
-</Canvas>
+<Story height={'200px'} id="hidden-stories--center-top" />
 
 ```tsx dark="true"
 import {OverlayContextProvider, Overlay, OverlayPosition} from "./react-overlay-manager";
@@ -54,9 +51,7 @@ or width, hence the explicit definition.
 Let's extend this to place an overlay in every possible position so we can get a better
 idea of where they all sit.
 
-<Canvas>
-    <Story height={'500px'} id="hidden-stories--all-positions" />
-</Canvas>
+<Story height={'500px'} id="hidden-stories--all-positions" />
 
 ```tsx dark="true"
 import {OverlayContextProvider} from "./react-overlay-manager";

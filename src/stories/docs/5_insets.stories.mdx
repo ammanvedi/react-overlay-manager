@@ -1,6 +1,91 @@
-import { Meta } from '@storybook/addon-docs';
+import { Meta, Story, Canvas } from '@storybook/addon-docs';
 
 <Meta title="Documentation/Insets" />
 
 # Insets
 
+You may have elements in the UI that you want overlays to avoid, but you
+may not want to add these as overlays to achieve this. A common example
+would be if you have a navigation bar and you want overlays to sit under this.
+
+You can use insets to help in situations like this. In the example below
+we have a navigation bar.
+
+Give it a scroll and see what happens to the overlay;
+
+<Story height={'300px'} id="hidden-stories--inset-story" />
+
+In this case we apply an inset to the top side, but we can apply them
+to any of the 4 sides of the screen viewport using the OverlaySide enum;
+
+<img width="600px" style={{margin: '0 auto', display: 'block'}} src="https://i.imgur.com/qf32Jnf.png" />
+
+The overlay will avoid the navigation bar and will recalculate the
+inset on scroll. There is a bit of effort needed to achieve this as
+can be seen in the example code
+
+```tsx dark="true"
+import { useCallback, useContext, useEffect } from "react";
+import { OverlayContext, OverlaySide, Overlay } from "react-overlay-manager";
+
+/**
+* We assume this component is wrapped by the OverlayContextProvider
+* somewhere higher in the tree
+*/
+const InsetExample = () => {
+    const { setInset, recalculateInsets, removeInset } = useContext(OverlayContext);
+
+    /**
+    * We define the callback that will be invoked when the ref is
+    * passed to the component.
+    */
+    const refCb = useCallback((ref) => {
+        setInset({
+            /**
+            * Give the inset a unique id
+            */
+            id: 'navigation',
+            /**
+            * Inset value can either be a ref or a number
+            */
+            insetValue: ref,
+            /**
+            * Which side of the screen should this affect
+            */
+            side: OverlaySide.TOP,
+            /**
+            * The inset size is based on the size of the element we pass,
+            * if we want to add some extra spacing we can define that here
+            */
+            extraPaddingPx: 16,
+        });
+    }, []);
+
+    useEffect(() => {
+        /**
+        * We should call the recalculate insets function when we do
+        * something that might change the inset, we leave this up to you
+        * as the implementer as you will know best when this might happen
+        *
+        * p.s. dont worry this function is already throttled by the library so you
+        * dont have to worry about calling it too often!
+        */
+        window.addEventListener('scroll', recalculateInsets);
+
+        return () => {
+            /**
+            * when we dispose of the component remember to dispose of the inset
+            */
+            removeInset('navigation');
+            window.removeEventListener('scroll', recalculateInsets);
+        };
+    }, []);
+
+    return (
+        <div>
+            <nav ref={refCb} />
+            <Overlay .../>
+        </div>
+    )
+}
+```

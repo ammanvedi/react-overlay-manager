@@ -29,7 +29,6 @@ export default {
 } as ComponentMeta<any>;
 
 const navStyles: React.CSSProperties = {
-    width: '100%',
     backgroundColor: 'blue',
     height: 70,
     borderRadius: 10,
@@ -37,7 +36,7 @@ const navStyles: React.CSSProperties = {
 };
 
 const pageStyles: React.CSSProperties = {
-    height: '120vh',
+    height: '130vh',
 };
 
 export const CenterTop = () => {
@@ -117,7 +116,7 @@ export const SimplePriority = () => {
     const { removeOverlay } = useContext(OverlayContext);
     const [show, setShow] = useState(false);
     const toggleInsert = () => {
-        removeOverlay(OverlayPosition.TOP_FULL_WIDTH, 'e').then(() => {
+        removeOverlay('e').then(() => {
             setShow((s) => !s);
         });
     };
@@ -238,8 +237,6 @@ const Story = () => {
 };
 
 export const SimpleStory = () => {
-    const { setInset, clear, recalculateInsets } = useContext(OverlayContext);
-
     return (
         <div style={{ height: '100vh' }}>
             <Overlay
@@ -292,13 +289,19 @@ export const SimpleStory = () => {
     );
 };
 
-const InsetStory = () => {
+export const InsetStory = () => {
     const { setInset, recalculateInsets, clear } = useContext(OverlayContext);
     const [overlays, setOverlays] = useState<
         Array<OverlayProps & RandomizablePlaceholderProps>
     >(mockOverlays.slice(0, 6));
 
     useEffect(() => {
+        const container = document.querySelector('.story-wrap');
+        if (container) {
+            container.style.overflow = 'visible';
+            document.body.style.backgroundColor = '#6c5ce7';
+        }
+
         window.addEventListener('scroll', recalculateInsets);
 
         return () => {
@@ -325,34 +328,62 @@ const InsetStory = () => {
     return (
         <div style={pageStyles}>
             <nav ref={refCb} style={navStyles} />
-            {overlays.map((o) => {
-                switch (o.position) {
-                    case OverlayPosition.TOP_FULL_WIDTH:
-                    case OverlayPosition.BOTTOM_FULL_WIDTH:
-                        return (
-                            <Overlay key={o.id} {...o}>
-                                <PlaceholderFullWidthNotification
-                                    id={o.id}
-                                    bgColor={o.bgColor}
-                                >
-                                    <div>Overlay :: {o.id}</div>
-                                </PlaceholderFullWidthNotification>
-                            </Overlay>
-                        );
-                    default:
-                        return (
-                            <Overlay key={o.id} {...o}>
-                                <PlaceholderNotification
-                                    id={o.id}
-                                    bgColor={o.bgColor}
-                                >
-                                    <div>Overlay :: {o.id}</div>
-                                </PlaceholderNotification>
-                            </Overlay>
-                        );
-                }
-            })}
+            {overlays
+                .map((o) => {
+                    switch (o.position) {
+                        case OverlayPosition.TOP_FULL_WIDTH:
+                        case OverlayPosition.BOTTOM_FULL_WIDTH:
+                            return (
+                                <Overlay key={o.id} {...o}>
+                                    <PlaceholderFullWidthNotification
+                                        id={o.id}
+                                        bgColor={o.bgColor}
+                                    >
+                                        <div>Overlay :: {o.id}</div>
+                                    </PlaceholderFullWidthNotification>
+                                </Overlay>
+                            );
+                        default:
+                            return (
+                                <Overlay key={o.id} {...o}>
+                                    <PlaceholderNotification
+                                        id={o.id}
+                                        bgColor={o.bgColor}
+                                    >
+                                        <div>Overlay :: {o.id}</div>
+                                    </PlaceholderNotification>
+                                </Overlay>
+                            );
+                    }
+                })
+                .slice(-1)}
         </div>
+    );
+};
+
+const aCol = getRandCol();
+const bCol = getRandCol();
+const cCol = getRandCol();
+
+export const ResponsiveStory = () => {
+    return (
+        <>
+            <Overlay id="a" position={OverlayPosition.TOP_LEFT} priority={1}>
+                <PlaceholderNotification id="a" bgColor={aCol}>
+                    Overlay A
+                </PlaceholderNotification>
+            </Overlay>
+            {/*<Overlay id="b" position={OverlayPosition.TOP_CENTER} priority={1}>*/}
+            {/*    <PlaceholderNotification id="b" bgColor={bCol}>*/}
+            {/*        Overlay B*/}
+            {/*    </PlaceholderNotification>*/}
+            {/*</Overlay>*/}
+            {/*<Overlay id="c" position={OverlayPosition.TOP_RIGHT} priority={1}>*/}
+            {/*    <PlaceholderNotification id="c" bgColor={cCol}>*/}
+            {/*        Overlay C*/}
+            {/*    </PlaceholderNotification>*/}
+            {/*</Overlay>*/}
+        </>
     );
 };
 

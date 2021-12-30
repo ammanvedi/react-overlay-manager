@@ -1,4 +1,5 @@
 import { OverlayContextProvider } from '../src/overlay-context';
+import { OverlayPosition } from '../src/types';
 
 export const parameters = {
     docs: { inlineStories: false },
@@ -20,6 +21,18 @@ export const parameters = {
     },
 };
 
+const rRules = {
+    [OverlayPosition.TOP_RIGHT]: {
+        '(max-width: 900px)': OverlayPosition.TOP_FULL_WIDTH,
+    },
+    [OverlayPosition.TOP_LEFT]: {
+        '(max-width: 900px)': OverlayPosition.TOP_FULL_WIDTH,
+    },
+    [OverlayPosition.TOP_CENTER]: {
+        '(max-width: 900px)': OverlayPosition.TOP_FULL_WIDTH,
+    },
+};
+
 export const decorators = [
     (Story) => {
         /**
@@ -33,10 +46,9 @@ export const decorators = [
         const menuItem = window.parent.parent.document.querySelector(
             '[data-item-id="hidden-stories"]',
         );
-        console.log(menuItem);
         menuItem.style.display = 'none';
         return (
-            <OverlayContextProvider>
+            <OverlayContextProvider responsiveRules={rRules}>
                 <div className="story-wrap">
                     <Story />
                 </div>

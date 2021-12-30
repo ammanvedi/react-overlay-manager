@@ -79,6 +79,7 @@ export const animateElementIn = (
 export const animateElementOut = (
     el: HTMLElement,
     dimensionReferenceElement: Element | null,
+    finalWidth = 'auto',
 ): Promise<void> => {
     el.style.display = 'inline-block';
     const { width, height } = getFullHeightAndWidthOfElement(
@@ -94,6 +95,7 @@ export const animateElementOut = (
     return transitionProperty(el, 'opacity', '1', '0')
         .then(() => transitionProperty(el, 'height', `${height}px`, '0px'))
         .then(() => {
+            el.style.width = finalWidth;
             el.style.height = '0';
             el.style.display = 'inline-block';
             el.style.overflow = 'initial';
@@ -116,30 +118,38 @@ export const transitionProperty = (
     target: string,
 ): Promise<void> => {
     el.style[property] = initial;
+    console.log(
+        'requested transition on',
+        property,
+        'current',
+        el.style[property],
+        'to',
+        target,
+    );
 
     const resultPromise: Promise<void> = new Promise((res) => {
         const handler = () => {
+            console.log('promise resolved', property);
             res();
             el.removeEventListener('transitionend', handler);
         };
+        console.log('adding listener');
         el.addEventListener('transitionend', handler);
-    });
 
-    /**
-     * Now hear me out on this one, the transitions dont seem to work so well
-     * when the transition property is set immediately. So here we shove this to
-     * the back of the event queue and let it be called when the call stack is
-     * emptied at some later time.
-     */
-    setTimeout(() => {
+        /**
+         * Now hear me out on this one, the transitions dont seem to work so well
+         * when the transition property is set immediately. So here we shove this to
+         * the back of the event queue and let it be called when the call stack is
+         * emptied at some later time.
+         */
         el.style[property] = target;
-    }, 1);
+    });
 
     return resultPromise;
 };
 
-export const getFinalWidth = (o: OverlayRecord): string => {
-    switch (o.position) {
+export const getFinalWidth = (p: OverlayPosition | null): string => {
+    switch (p) {
         case OverlayPosition.BOTTOM_FULL_WIDTH:
         case OverlayPosition.TOP_FULL_WIDTH:
             return '100%';
