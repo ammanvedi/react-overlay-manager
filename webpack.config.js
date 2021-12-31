@@ -1,6 +1,7 @@
 const path = require('path');
 
 module.exports = {
+    devtool: 'source-map',
     externals: ['react', 'react-dom'],
     entry: './src/index.ts',
     mode: 'production',
