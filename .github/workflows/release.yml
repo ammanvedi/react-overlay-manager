@@ -20,7 +20,7 @@ jobs:
           echo "Running Tests"
           npm test
           echo "Building Library"
-          npm run build
+          npm run build-ci
           git config --global user.name 'Release Workflow'
           git config --global user.email 'release-workflow@users.noreply.github.com'
           echo "Incrementing version"

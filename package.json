@@ -11,7 +11,8 @@
   "description": "Position overlays over your application in a declarative manner",
   "scripts": {
     "test": "./node_modules/.bin/jest",
-    "build": "export NODE_OPTIONS=--openssl-legacy-provider && ./node_modules/.bin/webpack-cli",
+    "build": "export NODE_OPTIONS=--openssl-legacy-provider && npm run build-ci",
+    "build-ci": "./node_modules/.bin/webpack-cli",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006",
     "build-storybook": "export NODE_OPTIONS=--openssl-legacy-provider && build-storybook --output-dir docs"
   },
