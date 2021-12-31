@@ -7,7 +7,7 @@
     "safe area"
   ],
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Position overlays over your application in a declarative manner",
   "scripts": {
     "test": "./node_modules/.bin/jest",
