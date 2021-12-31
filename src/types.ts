@@ -43,7 +43,7 @@ export interface OverlayRecord {
     element: HTMLElement;
     hideAfterMs?: number;
     createdAt: number;
-    onRemovedAfterConstraintViolation: (id: OverlayId) => void;
+    onRemovedAfterConstraintViolation?: (id: OverlayId) => void;
     position: {
         original: Readonly<OverlayPosition>;
         current: OverlayPosition | null;

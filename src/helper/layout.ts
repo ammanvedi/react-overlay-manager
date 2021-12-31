@@ -82,6 +82,8 @@ export const getNewInsetStore = (): OverlaySideInsetStore => {
     return new Map();
 };
 
+export const getNewOverlayStore = (): OverlayStore => new Map();
+
 export const getConfigForMatchMedia = (
     record: MatchMediaRecord | null,
 ): ResponsiveConstraints | null => {
@@ -127,9 +129,6 @@ export const putOverlaysInContainers = (
         position: OverlayPosition,
     ) => void,
 ): OverlayLayoutStore => {
-    // TODO - if we approach the problem like this
-    // it is probably better to do a logn sort on the above
-    // as the reasoning above probably doesnt make sense any more
     const result: OverlayLayoutStore = getNewLayoutStore();
     overlayStore.forEach((overlay) => {
         const resConfig = responsiveRules[overlay.position.original];
@@ -268,7 +267,7 @@ export const getNOldestOverlays = (
 
 export const evaluateConstraints = (
     overlayStore: OverlayStore,
-    overlayLayoutStore: MutableRefObject<OverlayLayoutStore>,
+    overlayLayoutStore: OverlayLayoutStore,
     onConstraintViolation: ConstraintViolationCallback,
     overlayElement: HTMLElement,
     removeOverlay: OverlayContextType['removeOverlay'],
@@ -308,11 +307,11 @@ export const handleMaxItemsConstraint = (
     constraint: PositionConstraintMaxItems,
     position: OverlayPosition,
     overlayStore: OverlayStore,
-    overlayLayoutStore: MutableRefObject<OverlayLayoutStore>,
+    overlayLayoutStore: OverlayLayoutStore,
     onConstraintViolation: ConstraintViolationCallback,
     removeOverlay: OverlayContextType['removeOverlay'],
 ): Array<Promise<void>> => {
-    const overlaysInPosition = overlayLayoutStore.current.get(position);
+    const overlaysInPosition = overlayLayoutStore.get(position);
 
     if (!overlaysInPosition) {
         return [];
@@ -367,7 +366,7 @@ export const handleMaxItemsConstraint = (
 export const evaluateConstraintsForPosition = (
     position: OverlayPosition,
     overlayStore: OverlayStore,
-    overlayLayoutStore: MutableRefObject<OverlayLayoutStore>,
+    overlayLayoutStore: OverlayLayoutStore,
     onConstraintViolation: ConstraintViolationCallback,
     overlayElement: HTMLElement,
     removeOverlay: OverlayContextType['removeOverlay'],
