@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useRef, useEffect } from 'react';
 import {
+    ConstraintViolationCallback,
     OverlayContextType,
     OverlayId,
     OverlayLayoutStore,
@@ -11,10 +12,12 @@ import {
 } from './types';
 import {
     BASE_LAYOUT,
+    DEFAULT_CONSTRAINT_VIOLATION_CALLBACK,
     DEFAULT_PORTAL_WRAPPER_ID,
     DEFAULT_PORTAL_WRAPPER_TAG,
     DEFAULT_RESPONSIVE_RULES,
     ID_MAP,
+    noop,
 } from './constants';
 import {
     addToBodyAndRemoveOld,
@@ -29,9 +32,11 @@ import {
 import debounce from 'lodash.debounce';
 import {
     applyInsets,
+    evaluateConstraints,
     getInsets,
     getNewInsetStore,
     getNewLayoutStore,
+    getUniqueCreationTimestamp,
     insertAtCorrectPosition,
     overlayExists,
     putOverlaysInContainers,
@@ -66,12 +71,19 @@ export interface OverlayContextProviderProps {
      * Define how overlays move around when the screen size changes
      */
     responsiveRules?: ResponsiveRules;
+    /**
+     * A callback that will be invoked when the addition of this overlay has caused the
+     * parent container to overflow the view. The implementor can then decide what
+     * action to take.
+     */
+    onConstraintViolation?: ConstraintViolationCallback;
 }
 
 export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
     children,
     rootId = DEFAULT_PORTAL_WRAPPER_ID,
     responsiveRules = DEFAULT_RESPONSIVE_RULES,
+    onConstraintViolation = DEFAULT_CONSTRAINT_VIOLATION_CALLBACK,
 }) => {
     /**
      * TODO
@@ -125,10 +137,10 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
 
             const overlayRecord: OverlayRecord = {
                 ...overlay,
-                id: overlay.id,
-                priority: overlay.priority,
                 element: portalContainerForOverlay,
-                hideAfterMs: overlay.hideAfterMs,
+                createdAt: getUniqueCreationTimestamp(),
+                onRemovedAfterConstraintViolation:
+                    overlay.onRemovedAfterConstraintViolation || noop,
                 position: {
                     original: overlay.position as Readonly<OverlayPosition>,
                     current: null,
@@ -152,6 +164,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                     overlay.element,
                     getWidthReference(overlay.element),
                     getFinalWidth(overlay.position.current),
+                    0,
                 );
                 unregisterOverlay(id);
             }
@@ -182,6 +195,8 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
             /**
              * First we place all divs into the correct containers
              */
+            let inCount = 0;
+            let outCount = 0;
             const animationPromises: Array<Promise<void>> = [];
             overlayLayoutStore.current = putOverlaysInContainers(
                 overlayStore.current,
@@ -218,10 +233,12 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                                     overlay.element,
                                     getWidthReference(overlay.element),
                                     getFinalWidth(overlay.position.desired),
+                                    inCount * 20,
                                 ).then(() => {
                                     overlay.position.current = position;
                                 }),
                             );
+                            inCount++;
                         } else {
                             /**
                              * We can land in a funny situation here, we move an overlay
@@ -238,6 +255,7 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                                     overlay.element,
                                     getWidthReference(overlay.element),
                                     getFinalWidth(overlay.position.desired),
+                                    outCount * 20,
                                 )
                                     .then(() => {
                                         /**
@@ -275,9 +293,12 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                                             getFinalWidth(
                                                 _overlay.position.desired,
                                             ),
+                                            inCount * 20,
                                         );
                                     }),
                             );
+                            outCount++;
+                            inCount++;
                         }
 
                         return;
@@ -287,7 +308,17 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                 },
             );
 
-            return Promise.all(animationPromises);
+            return Promise.all([
+                ...animationPromises,
+                evaluateConstraints(
+                    overlayStore.current,
+                    overlayLayoutStore,
+                    onConstraintViolation,
+                    elementRef.current,
+                    removeOverlay,
+                    responsiveRules,
+                ),
+            ]);
         }, 500),
         [],
     );
@@ -350,6 +381,8 @@ export const OverlayContextProvider: React.FC<OverlayContextProviderProps> = ({
                  * object by creating a new one!
                  */
                 overlay.priority = newRecord.priority;
+                overlay.onRemovedAfterConstraintViolation =
+                    newRecord.onRemovedAfterConstraintViolation || noop;
                 overlay.position.desired = newRecord.position;
                 overlay.position.original = newRecord.position;
 

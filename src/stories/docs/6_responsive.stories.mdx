@@ -13,13 +13,22 @@ import {OverlayContextProvider, ResponsiveRules, OverlayPosition} from "react-ov
 
 export const rr: ResponsiveRules = {
     [OverlayPosition.TOP_RIGHT]: {
-        '(max-width: 900px)': OverlayPosition.TOP_FULL_WIDTH,
+        '(max-width: 900px)': {
+            position: OverlayPosition.TOP_FULL_WIDTH,
+            constraints: null,
+        },
     },
     [OverlayPosition.TOP_LEFT]: {
-        '(max-width: 900px)': OverlayPosition.TOP_FULL_WIDTH,
+        '(max-width: 900px)': {
+            position: OverlayPosition.TOP_FULL_WIDTH,
+            constraints: null,
+        },
     },
     [OverlayPosition.TOP_CENTER]: {
-        '(max-width: 900px)': OverlayPosition.TOP_FULL_WIDTH,
+        '(max-width: 900px)': {
+            position: OverlayPosition.TOP_FULL_WIDTH,
+            constraints: null,
+        },
     },
 };
 
@@ -30,6 +39,9 @@ export const rr: ResponsiveRules = {
 
 As you can see for each position we create a map of media query (one that can be evaluated
 by [window.matchMedia](https://developer.mozilla.org/en-US/docs/Web/API/Window/matchMedia)) to another position.
+
+Just concentrate on the `position` property for now, as the constraints property will be
+discussed in the related documentation.
 
 You can see the result of the above configuration on different screen widths
 below

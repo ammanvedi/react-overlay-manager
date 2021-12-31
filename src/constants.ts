@@ -1,5 +1,10 @@
 import { css } from './styles';
-import { OverlayPosition, ResponsiveRules } from './types';
+import {
+    ConstraintViolationCallback,
+    OverlayPosition,
+    ResponsiveRules,
+    ViolationReactionType,
+} from './types';
 
 export const DATA_MOUNTED = 'data-mounted';
 export const DEFAULT_PORTAL_WRAPPER_ID = 'rom-portal';
@@ -94,7 +99,7 @@ export const BASE_CSS = css`
     .overlay-wrapper {
         pointer-events: all;
         width: 100%;
-        opacity: 0;
+        backface-visibility: hidden;
     }
 
     .overlay-wrapper > * {
@@ -133,17 +138,39 @@ export const BASE_LAYOUT = `
       </div>
 `;
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+export const noop = () => {};
+
+export const DEFAULT_CONSTRAINT_VIOLATION_CALLBACK: ConstraintViolationCallback =
+    () => {
+        return {
+            type: ViolationReactionType.REMOVE_OLDEST_AUTO,
+        };
+    };
+
 export const DEFAULT_RESPONSIVE_RULES: ResponsiveRules = {
     [OverlayPosition.TOP_RIGHT]: {
-        '(max-width: 900px)': OverlayPosition.TOP_CENTER,
+        '(max-width: 900px)': {
+            position: OverlayPosition.TOP_CENTER,
+            constraints: null,
+        },
     },
     [OverlayPosition.TOP_LEFT]: {
-        '(max-width: 900px)': OverlayPosition.TOP_CENTER,
+        '(max-width: 900px)': {
+            position: OverlayPosition.TOP_CENTER,
+            constraints: null,
+        },
     },
     [OverlayPosition.BOTTOM_RIGHT]: {
-        '(max-width: 900px)': OverlayPosition.BOTTOM_CENTER,
+        '(max-width: 900px)': {
+            position: OverlayPosition.BOTTOM_CENTER,
+            constraints: null,
+        },
     },
     [OverlayPosition.BOTTOM_LEFT]: {
-        '(max-width: 900px)': OverlayPosition.BOTTOM_CENTER,
+        '(max-width: 900px)': {
+            position: OverlayPosition.BOTTOM_CENTER,
+            constraints: null,
+        },
     },
 };

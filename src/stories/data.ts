@@ -22,18 +22,19 @@ const positions: Array<OverlayPosition> = [
     OverlayPosition.BOTTOM_CENTER,
     OverlayPosition.BOTTOM_RIGHT,
     OverlayPosition.BOTTOM_LEFT,
+    OverlayPosition.TOP_FULL_WIDTH,
+    OverlayPosition.BOTTOM_FULL_WIDTH,
 ];
 
 const randomisePosition = (
     o: Omit<OverlayProps, 'children'> & RandomizablePlaceholderProps,
 ): OverlayPosition => {
+    const positionsWithoutCurrent = positions.filter((p) => p !== o.position);
     switch (o.position) {
-        case OverlayPosition.TOP_FULL_WIDTH:
-            return OverlayPosition.BOTTOM_FULL_WIDTH;
-        case OverlayPosition.BOTTOM_FULL_WIDTH:
-            return OverlayPosition.TOP_FULL_WIDTH;
         default:
-            return positions[randomValue(0, positions.length)];
+            return positionsWithoutCurrent[
+                randomValue(0, positionsWithoutCurrent.length)
+            ];
     }
 };
 

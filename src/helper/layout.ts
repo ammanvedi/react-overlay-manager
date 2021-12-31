@@ -1,6 +1,8 @@
 import {
+    ConstraintViolationCallback,
     InsetRect,
     MatchMediaRecord,
+    OverlayContextType,
     OverlayId,
     OverlayLayoutStore,
     OverlayPosition,
@@ -8,8 +10,13 @@ import {
     OverlaySide,
     OverlaySideInsetStore,
     OverlayStore,
+    PositionConstraintMaxItems,
+    PositionConstraints,
+    ResponsiveConstraints,
     ResponsiveRules,
+    ViolationReactionType,
 } from '../types';
+import { MutableRefObject } from 'react';
 
 /**
  * The main key assumption we can make here is that the
@@ -75,9 +82,9 @@ export const getNewInsetStore = (): OverlaySideInsetStore => {
     return new Map();
 };
 
-export const getPositionForMatchMedia = (
+export const getConfigForMatchMedia = (
     record: MatchMediaRecord | null,
-): OverlayPosition | null => {
+): ResponsiveConstraints | null => {
     if (!record) {
         return null;
     }
@@ -129,7 +136,7 @@ export const putOverlaysInContainers = (
 
         const destinationPosition =
             (resConfig
-                ? getPositionForMatchMedia(resConfig)
+                ? getConfigForMatchMedia(resConfig)?.position
                 : overlay.position.original) || overlay.position.original;
 
         addToLayoutStore(result, destinationPosition, overlay, overlayStore);
@@ -221,4 +228,174 @@ export const insertAtCorrectPosition = (
     const nextId = desiredOrder[index + 1];
 
     container.insertBefore(element, container.querySelector(`#${nextId}`));
+};
+
+export const getUniqueCreationTimestamp: () => number = (() => {
+    let i = 0;
+
+    return () => {
+        return ++i;
+    };
+})();
+
+export const getOldestOverlay = (
+    overlays: Array<OverlayRecord>,
+): OverlayRecord => {
+    let oVal = Infinity;
+    let oIndex = 0;
+
+    for (let i = 0; i < overlays.length; i++) {
+        const o = overlays[i];
+
+        if (o.createdAt < oVal) {
+            oVal = o.createdAt;
+            oIndex = i;
+        }
+    }
+
+    return overlays[oIndex];
+};
+
+export const getNOldestOverlays = (
+    overlays: Array<OverlayRecord>,
+    n: number,
+): Array<OverlayRecord> => {
+    const sorted = overlays.sort((a, b) => {
+        return a.createdAt - b.createdAt;
+    });
+    return sorted.slice(0, n);
+};
+
+export const evaluateConstraints = (
+    overlayStore: OverlayStore,
+    overlayLayoutStore: MutableRefObject<OverlayLayoutStore>,
+    onConstraintViolation: ConstraintViolationCallback,
+    overlayElement: HTMLElement,
+    removeOverlay: OverlayContextType['removeOverlay'],
+    responsiveConfig: ResponsiveRules,
+): Promise<any> => {
+    return Promise.all(
+        Object.values(OverlayPosition).reduce((acc, pos) => {
+            const rConf = responsiveConfig[pos];
+
+            if (!rConf) {
+                return acc;
+            }
+
+            const matchingConf = getConfigForMatchMedia(rConf);
+
+            if (!matchingConf) {
+                return acc;
+            }
+
+            return [
+                ...acc,
+                ...evaluateConstraintsForPosition(
+                    pos,
+                    overlayStore,
+                    overlayLayoutStore,
+                    onConstraintViolation,
+                    overlayElement,
+                    removeOverlay,
+                    matchingConf.constraints,
+                ),
+            ];
+        }, [] as Array<Promise<any>>),
+    );
+};
+
+export const handleMaxItemsConstraint = (
+    constraint: PositionConstraintMaxItems,
+    position: OverlayPosition,
+    overlayStore: OverlayStore,
+    overlayLayoutStore: MutableRefObject<OverlayLayoutStore>,
+    onConstraintViolation: ConstraintViolationCallback,
+    removeOverlay: OverlayContextType['removeOverlay'],
+): Array<Promise<void>> => {
+    const overlaysInPosition = overlayLayoutStore.current.get(position);
+
+    if (!overlaysInPosition) {
+        return [];
+    }
+
+    if (overlaysInPosition.length <= constraint.max) {
+        return [];
+    }
+
+    const overlays = overlaysInPosition.map((o) =>
+        overlayStore.get(o),
+    ) as Array<OverlayRecord>;
+
+    const action = onConstraintViolation({
+        overlays,
+        violationPosition: position,
+    });
+
+    const overflowCount = overlaysInPosition.length - constraint.max;
+
+    switch (action.type) {
+        case ViolationReactionType.NO_ACTION:
+            return [];
+        case ViolationReactionType.REMOVE_IDS:
+            return action.ids.map((id) => {
+                const cb =
+                    overlayStore.get(id)?.onRemovedAfterConstraintViolation;
+
+                return removeOverlay(id).then(() => {
+                    if (cb) {
+                        cb(id);
+                    }
+                });
+            });
+        case ViolationReactionType.REMOVE_OLDEST_AUTO:
+            return getNOldestOverlays(overlays, overflowCount).map((o) => {
+                const cb = overlayStore.get(
+                    o.id,
+                )?.onRemovedAfterConstraintViolation;
+
+                return removeOverlay(o.id).then(() => {
+                    if (cb) {
+                        cb(o.id);
+                    }
+                });
+            });
+        default:
+            return [];
+    }
+};
+
+export const evaluateConstraintsForPosition = (
+    position: OverlayPosition,
+    overlayStore: OverlayStore,
+    overlayLayoutStore: MutableRefObject<OverlayLayoutStore>,
+    onConstraintViolation: ConstraintViolationCallback,
+    overlayElement: HTMLElement,
+    removeOverlay: OverlayContextType['removeOverlay'],
+    constraints: ResponsiveConstraints['constraints'],
+): Array<Promise<void>> => {
+    if (!constraints) {
+        return [];
+    }
+
+    const promises: Array<Promise<void>> = [];
+
+    for (let i = 0; i < constraints.length; i++) {
+        const constraint = constraints[i];
+
+        switch (constraint.type) {
+            case PositionConstraints.MAX_ITEMS:
+                promises.push(
+                    ...handleMaxItemsConstraint(
+                        constraint,
+                        position,
+                        overlayStore,
+                        overlayLayoutStore,
+                        onConstraintViolation,
+                        removeOverlay,
+                    ),
+                );
+        }
+    }
+
+    return promises;
 };

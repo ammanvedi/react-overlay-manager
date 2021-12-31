@@ -1,0 +1,226 @@
+import { Meta, Story } from '@storybook/addon-docs';
+import {PositionConstraints} from "../../types";
+
+<Meta title="Documentation/Constraints" />
+
+# Constraints
+You have the ability to remove overlays from the view. Here are the methods available to achieve that.
+
+# General
+Constraints are specified inside the `responsiveRules` prop on the `overlayContextProvider`
+
+
+```tsx dark="true"
+import {
+    ResponsiveRules,
+    OverlayPosition,
+    PositionConstraints
+} from "react-overlay-manager";
+
+export const rr: ResponsiveRules = {
+    [OverlayPosition.TOP_FULL_WIDTH]: {
+        '(max-width: 900px)': {
+            position: null,
+            constraints: [
+                {
+                    type: PositionConstraints.MAX_ITEMS,
+                    max: 3,
+                }
+            ],
+        },
+    },
+};
+
+
+```
+
+
+Here are the type definitions for constraints
+
+```tsx dark="true"
+export enum PositionConstraints {
+    MAX_ITEMS = 'MAX_ITEMS',
+}
+
+export interface PositionConstraintMaxItems {
+    type: PositionConstraints.MAX_ITEMS;
+    max: number;
+}
+
+export type PositionConstraint = PositionConstraintMaxItems;
+
+export type ResponsiveConstraints = {
+    position: OverlayPosition | null;
+    constraints: Array<PositionConstraint> | null;
+};
+
+export type MatchMediaRecord = Record<string, ResponsiveConstraints>;
+
+export type ResponsiveRules = Partial<
+    Record<OverlayPosition, MatchMediaRecord | null>
+>;
+
+```
+
+When a constraint is violated we can decide what to do by passing a callback
+to the provider
+
+```tsx dark="true"
+export type ConstraintViolationCallback = (
+    violation: ConstraintViolationRecord,
+) => ConstraintViolationReaction;
+```
+
+In this callback we get information about the constraint that was violated and we must return
+an object describign what we want to do. It will be one of the following
+
+```tsx dark="true"
+export type ConstraintViolationReaction =
+    /**
+    * Remove the items that were added the longest time ago in order to maintain the
+    * constraint
+    */
+    | ViolationReactionRemoveOldestAuto
+    /**
+    * Remove a specific array of ids to maintain the constraint
+    */
+    | ViolationReactionRemoveIds
+    /**
+    * Do nothing
+    */
+    | ViolationReactionNoAction;
+```
+
+See the exported types in the library for full definitions. The default implementation is
+
+```tsx dark="true"
+export const DEFAULT_CONSTRAINT_VIOLATION_CALLBACK: ConstraintViolationCallback =
+    () => {
+        return {
+            type: ViolationReactionType.REMOVE_OLDEST_AUTO,
+        };
+    };
+
+```
+
+We then pass the configurations to the provider.
+
+```tsx dark="true"
+<OverlayContextProvider responsiveRules={rr} onConstraintViolation={() => {...}}>
+    ...
+</OverlayContextProvider>
+```
+
+## Removal Callback
+When an overlay is forcibly removed by a constraint validation we will get a
+callback. This callback indicates that the overlay has been animated out and the
+portal removed. You can use this as an indication that you can now un mount
+the overlay in your application.
+
+```tsx dark="true"
+<Overlay
+    onRemovedAfterConstraintViolation={() => {
+        console.log('removed', o.id);
+    }}
+>
+    ...
+</Overlay>
+```
+
+
+## Max Items Constraint
+
+The configuration above shows a maximum items constraint of three on the top full
+width section. Here is the result of that configuration.
+
+Here is a full example
+
+```tsx dark="true"
+import {
+    OverlayContextProvider,
+    ResponsiveRules,
+    OverlayPosition,
+    PositionConstraints,
+    ViolationReactionType,
+    OverlayId
+} from "react-overlay-manager";
+
+import {useEffect, useState, useCallback} from "react";
+
+export const rr: ResponsiveRules = {
+    [OverlayPosition.TOP_FULL_WIDTH]: {
+        '(max-width: 900px)': {
+            position: null,
+            constraints: [
+                {
+                    type: PositionConstraints.MAX_ITEMS,
+                    max: 3,
+                }
+            ],
+        },
+    },
+};
+
+const App = () => (
+    <OverlayContextProvider
+        responsiveRules={rr}
+        onConstraintViolation={() => ({
+            type: ViolationReactionType.REMOVE_OLDEST_AUTO,
+        })}>
+        <OverlayExample />
+    </OverlayContextProvider>
+);
+
+const OverlayExample = () => {
+    const [overlays, setOverlays] = useState([]);
+
+    useEffect(() => {
+        let id = 0;
+        /**
+        * Every 500ms lets add a new overlay !
+        */
+        setInterval(() => {
+            setOverlays((o) => [
+                ...o,
+                {
+                    id: (++id).toString(),
+                    position: OverlayPosition.TOP_FULL_WIDTH,
+                    priority: 1,
+                },
+            ]);
+        }, 500);
+    }, []);
+
+    const onOverlayRemoved = useCallback((id: OverlayId) => {
+        /**
+        * When we remove an overlay we also remove it from our data structure so
+        * it will no longer be mounted to the DOM. By doing this we prevent the
+        * list growing to infinity
+        */
+        setOverlays((o) => {
+            return o.filter((ol) => ol.id !== id);
+        });
+    }, []);
+
+    return (
+        <>
+            {overlays.map((o) => (
+                <Overlay
+                    key={o.id}
+                    id={o.id}
+                    position={o.position}
+                    priority={o.priority}
+                    onRemovedAfterConstraintViolation={onOverlayRemoved}
+                >
+                    Overlay Content
+                </Overlay>
+            ))}
+        </>
+    );
+}
+
+```
+
+And the result;
+
+<Story height='500px' id="hidden-stories--constraint-max-items" />

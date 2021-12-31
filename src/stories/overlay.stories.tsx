@@ -14,7 +14,12 @@ import {
     getRandomEvent,
     mockOverlays,
 } from './data';
-import { OverlayPosition, OverlaySide } from '../types';
+import {
+    OverlayCreationRecord,
+    OverlayId,
+    OverlayPosition,
+    OverlaySide,
+} from '../types';
 import {
     PlaceholderFullWidthNotification,
     PlaceholderNotification,
@@ -175,6 +180,52 @@ export const SimpleTimeout = () => {
     );
 };
 
+export const ConstraintMaxItems = () => {
+    const [overlays, setOverlays] = useState<
+        Array<OverlayCreationRecord & { text: string; col: string }>
+    >([]);
+
+    useEffect(() => {
+        let id = 0;
+        setInterval(() => {
+            setOverlays((o) => [
+                ...o,
+                {
+                    text: new Date().toISOString(),
+                    col: getRandCol(),
+                    id: (++id).toString(),
+                    position: OverlayPosition.TOP_FULL_WIDTH,
+                    priority: 1,
+                },
+            ]);
+        }, 500);
+    }, []);
+
+    const onOverlayRemoved = useCallback((id: OverlayId) => {
+        setOverlays((o) => {
+            return o.filter((ol) => ol.id !== id);
+        });
+    }, []);
+
+    return (
+        <>
+            {overlays.map((o) => (
+                <Overlay
+                    key={o.id}
+                    id={o.id}
+                    position={o.position}
+                    priority={o.priority}
+                    onRemovedAfterConstraintViolation={onOverlayRemoved}
+                >
+                    <PlaceholderFullWidthNotification id="a" bgColor={o.col}>
+                        {o.text}
+                    </PlaceholderFullWidthNotification>
+                </Overlay>
+            ))}
+        </>
+    );
+};
+
 export const SimplePriority = () => {
     const { removeOverlay } = useContext(OverlayContext);
     const [show, setShow] = useState(false);
@@ -259,7 +310,7 @@ const Story = () => {
                 const action = getRandomEvent(overlays.length, o);
                 return applyRandomActionToOverlays(action, o);
             });
-        }, 250);
+        }, 500);
 
         return () => {
             clearInterval(intervalId);
@@ -423,26 +474,21 @@ export const InsetStory = () => {
         </div>
     );
 };
-
-const aCol = getRandCol();
-const bCol = getRandCol();
-const cCol = getRandCol();
-
 export const ResponsiveStory = () => {
     return (
         <>
-            <Overlay id="a" position={OverlayPosition.TOP_LEFT} priority={1}>
-                <PlaceholderNotification id="a" bgColor={aCol}>
+            <Overlay id="a" position={OverlayPosition.TOP_LEFT} priority={0}>
+                <PlaceholderNotification id="a" bgColor={'pink'}>
                     Overlay A
                 </PlaceholderNotification>
             </Overlay>
             <Overlay id="b" position={OverlayPosition.TOP_CENTER} priority={1}>
-                <PlaceholderNotification id="b" bgColor={bCol}>
+                <PlaceholderNotification id="b" bgColor={'green'}>
                     Overlay B
                 </PlaceholderNotification>
             </Overlay>
-            <Overlay id="c" position={OverlayPosition.TOP_RIGHT} priority={1}>
-                <PlaceholderNotification id="c" bgColor={cCol}>
+            <Overlay id="c" position={OverlayPosition.TOP_RIGHT} priority={2}>
+                <PlaceholderNotification id="c" bgColor={'orange'}>
                     Overlay C
                 </PlaceholderNotification>
             </Overlay>

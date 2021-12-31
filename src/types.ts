@@ -25,16 +25,16 @@ export type OverlayContextType = {
     clear: () => void;
 };
 
+export type ConstraintViolationCallback = (
+    violation: ConstraintViolationRecord,
+) => ConstraintViolationReaction;
+
 export interface OverlayCreationRecord {
     position: OverlayPosition;
     priority: number;
     id: OverlayId;
+    onRemovedAfterConstraintViolation?: (id: OverlayId) => void;
     hideAfterMs?: number;
-}
-
-export interface Translation {
-    x: number;
-    y: number;
 }
 
 export interface OverlayRecord {
@@ -42,6 +42,8 @@ export interface OverlayRecord {
     priority: number;
     element: HTMLElement;
     hideAfterMs?: number;
+    createdAt: number;
+    onRemovedAfterConstraintViolation: (id: OverlayId) => void;
     position: {
         original: Readonly<OverlayPosition>;
         current: OverlayPosition | null;
@@ -78,47 +80,53 @@ export enum OverlaySide {
     LEFT = 'LEFT',
 }
 
-export enum OverlayError {
-    OVERLAY_EXISTS_ALREADY = 'OVERLAY_EXISTS_ALREADY',
+export enum PositionConstraints {
+    MAX_ITEMS = 'MAX_ITEMS',
 }
 
-enum RemovalSuggestionReason {
-    TIMEOUT = 'TIMEOUT',
-    OVERLAP = 'OVERLAP',
+export interface PositionConstraintMaxItems {
+    type: PositionConstraints.MAX_ITEMS;
+    max: number;
 }
 
-enum LayoutDifferentialType {
-    REMOVED = 'REMOVED',
-    ADDED = 'ADDED',
-    MOVED = 'MOVED',
-    SUGGEST_REMOVAL = 'SUGGEST_REMOVAL',
-}
+export type PositionConstraint = PositionConstraintMaxItems;
 
-export interface DifferentialRemoval {
-    type: LayoutDifferentialType.REMOVED;
-}
+export type ResponsiveConstraints = {
+    position: OverlayPosition | null;
+    constraints: Array<PositionConstraint> | null;
+};
 
-export interface DifferentialAddition {
-    type: LayoutDifferentialType.ADDED;
-}
-
-export interface DifferentialMoved {
-    type: LayoutDifferentialType.MOVED;
-}
-
-export interface DifferentialSuggestRemoval {
-    type: LayoutDifferentialType.SUGGEST_REMOVAL;
-    reason: RemovalSuggestionReason;
-}
-
-export type LayoutDifferential =
-    | DifferentialSuggestRemoval
-    | DifferentialAddition
-    | DifferentialMoved
-    | DifferentialRemoval;
-
-export type MatchMediaRecord = Record<string, OverlayPosition>;
+export type MatchMediaRecord = Record<string, ResponsiveConstraints>;
 
 export type ResponsiveRules = Partial<
     Record<OverlayPosition, MatchMediaRecord | null>
 >;
+
+export enum ViolationReactionType {
+    REMOVE_OLDEST_AUTO = 'REMOVE_OLDEST_AUTO',
+    REMOVE_IDS = 'REMOVE_IDS',
+    NO_ACTION = 'NO_ACTION',
+}
+
+export interface ViolationReactionRemoveOldestAuto {
+    type: ViolationReactionType.REMOVE_OLDEST_AUTO;
+}
+
+export interface ViolationReactionNoAction {
+    type: ViolationReactionType.NO_ACTION;
+}
+
+export interface ViolationReactionRemoveIds {
+    type: ViolationReactionType.REMOVE_IDS;
+    ids: Array<OverlayId>;
+}
+
+export type ConstraintViolationReaction =
+    | ViolationReactionRemoveOldestAuto
+    | ViolationReactionRemoveIds
+    | ViolationReactionNoAction;
+
+export interface ConstraintViolationRecord {
+    violationPosition: OverlayPosition;
+    overlays: Readonly<Array<OverlayRecord>>;
+}

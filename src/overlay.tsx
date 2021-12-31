@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import React, { useEffect, useContext, useRef, ReactNode } from 'react';
+import React, { useEffect, useContext, ReactNode, useMemo } from 'react';
 import { OverlayContextType, OverlayId, OverlayPosition } from './types';
 import { OverlayContext } from './overlay-context';
 
@@ -24,6 +24,11 @@ export interface OverlayProps {
      * A number of milliseconds after which the overlay will be removed
      */
     hideAfterMs?: number;
+    /**
+     * When this overlay is removed due to a constraint violation we will be notified
+     * via this callback.
+     */
+    onRemovedAfterConstraintViolation?: (id: OverlayId) => void;
 }
 
 export const Overlay: React.FC<OverlayProps> = ({
@@ -32,6 +37,7 @@ export const Overlay: React.FC<OverlayProps> = ({
     position,
     priority,
     hideAfterMs,
+    onRemovedAfterConstraintViolation,
 }) => {
     const {
         registerOverlay,
@@ -39,13 +45,16 @@ export const Overlay: React.FC<OverlayProps> = ({
         updateOverlayRecord,
         setOverlayReady,
     } = useContext<OverlayContextType>(OverlayContext);
-    const { current: portalWrapper } = useRef<HTMLElement>(
-        registerOverlay({
-            id,
-            position,
-            priority,
-            hideAfterMs,
-        }),
+    const portalWrapper = useMemo<HTMLElement>(
+        () =>
+            registerOverlay({
+                id,
+                position,
+                priority,
+                hideAfterMs,
+                onRemovedAfterConstraintViolation,
+            }),
+        [],
     );
 
     /**
@@ -86,8 +95,9 @@ export const Overlay: React.FC<OverlayProps> = ({
             id,
             position,
             priority,
+            onRemovedAfterConstraintViolation,
         });
-    }, [position, priority]);
+    }, [position, priority, onRemovedAfterConstraintViolation]);
 
     return createPortal(children, portalWrapper);
 };

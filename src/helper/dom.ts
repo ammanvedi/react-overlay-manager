@@ -54,6 +54,7 @@ export const animateElementIn = (
     el: HTMLElement,
     dimensionReferenceElement: Element | null,
     finalWidth = 'auto',
+    delay: number,
 ): Promise<void> => {
     el.style.display = 'inline-block';
     el.style.height = `auto`;
@@ -66,9 +67,21 @@ export const animateElementIn = (
     el.style.opacity = '0';
     el.style.overflow = 'hidden';
 
-    return transitionProperty(el, 'height', '0px', transitionNumber(0, height))
+    return transitionProperty(
+        el,
+        'height',
+        '0px',
+        transitionNumber(0, height),
+        delay,
+    )
         .then(() =>
-            transitionProperty(el, 'opacity', '0px', transitionOpacityIn),
+            transitionProperty(
+                el,
+                'opacity',
+                '0px',
+                transitionOpacityIn,
+                delay,
+            ),
         )
         .then(() => {
             el.style.height = 'auto';
@@ -82,6 +95,7 @@ export const animateElementOut = (
     el: HTMLElement,
     dimensionReferenceElement: Element | null,
     finalWidth = 'auto',
+    delay: number,
 ): Promise<void> => {
     el.style.display = 'inline-block';
     const { width, height } = getFullHeightAndWidthOfElement(
@@ -94,13 +108,14 @@ export const animateElementOut = (
     el.style.opacity = '1';
     el.style.overflow = 'hidden';
 
-    return transitionProperty(el, 'opacity', '0', transitionOpacityOut)
+    return transitionProperty(el, 'opacity', '1', transitionOpacityOut, delay)
         .then(() =>
             transitionProperty(
                 el,
                 'height',
                 `${height}px`,
                 transitionNumber(height, 0),
+                delay,
             ),
         )
         .then(() => {
@@ -149,35 +164,38 @@ export const transitionProperty = (
     >,
     initial: string,
     getTargetForPercentageStep: (pct: number) => string,
-    duration = 300,
+    delay = 0,
+    duration = 250,
 ): Promise<void> => {
     el.style[property] = initial;
     return new Promise((res) => {
-        let start: DOMHighResTimeStamp | null = null;
-        let lastTs: DOMHighResTimeStamp | null = null;
-        const max = getTargetForPercentageStep(1);
+        setTimeout(() => {
+            let start: DOMHighResTimeStamp | null = null;
+            let lastTs: DOMHighResTimeStamp | null = null;
 
-        const raf = (ts: DOMHighResTimeStamp) => {
-            if (start === null) {
-                start = ts;
-            }
-            const elapsed = ts - start;
+            const raf = (ts: DOMHighResTimeStamp) => {
+                if (start === null) {
+                    start = ts;
+                }
+                const elapsed = ts - start;
 
-            if (ts !== lastTs) {
-                const progress = elapsed / duration;
-                el.style[property] = getTargetForPercentageStep(progress);
-            }
+                if (ts !== lastTs) {
+                    const progress = elapsed / duration;
+                    const val = getTargetForPercentageStep(progress);
+                    el.style[property] = val;
+                }
 
-            if (elapsed < duration) {
-                lastTs = ts;
-                window.requestAnimationFrame(raf);
-            } else {
-                el.style[property] = getTargetForPercentageStep(1);
-                res();
-            }
-        };
+                if (elapsed < duration) {
+                    lastTs = ts;
+                    window.requestAnimationFrame(raf);
+                } else {
+                    el.style[property] = getTargetForPercentageStep(1);
+                    res();
+                }
+            };
 
-        window.requestAnimationFrame(raf);
+            window.requestAnimationFrame(raf);
+        }, delay);
     });
 };
 

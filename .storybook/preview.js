@@ -1,5 +1,5 @@
 import { OverlayContextProvider } from '../src/overlay-context';
-import { OverlayPosition } from '../src/types';
+import { OverlayPosition, PositionConstraints } from '../src/types';
 
 export const parameters = {
     docs: { inlineStories: false },
@@ -21,20 +21,48 @@ export const parameters = {
     },
 };
 
-const rRules = {
-    [OverlayPosition.TOP_RIGHT]: {
-        '(max-width: 900px)': OverlayPosition.TOP_FULL_WIDTH,
-    },
-    [OverlayPosition.TOP_LEFT]: {
-        '(max-width: 900px)': OverlayPosition.TOP_FULL_WIDTH,
-    },
-    [OverlayPosition.TOP_CENTER]: {
-        '(max-width: 900px)': OverlayPosition.TOP_FULL_WIDTH,
-    },
+const getRRules = (id) => {
+    switch (id) {
+        case 'hidden-stories--constraint-max-items':
+            return {
+                [OverlayPosition.TOP_FULL_WIDTH]: {
+                    '(min-width: 0px)': {
+                        position: OverlayPosition.TOP_FULL_WIDTH,
+                        constraints: [
+                            {
+                                type: PositionConstraints.MAX_ITEMS,
+                                max: 3,
+                            },
+                        ],
+                    },
+                },
+            };
+        default:
+            return {
+                [OverlayPosition.TOP_RIGHT]: {
+                    '(max-width: 900px)': {
+                        position: OverlayPosition.TOP_FULL_WIDTH,
+                        constraints: null,
+                    },
+                },
+                [OverlayPosition.TOP_LEFT]: {
+                    '(max-width: 900px)': {
+                        position: OverlayPosition.TOP_FULL_WIDTH,
+                        constraints: null,
+                    },
+                },
+                [OverlayPosition.TOP_CENTER]: {
+                    '(max-width: 900px)': {
+                        position: OverlayPosition.TOP_FULL_WIDTH,
+                        constraints: null,
+                    },
+                },
+            };
+    }
 };
 
 export const decorators = [
-    (Story) => {
+    (Story, p) => {
         /**
          * Yes this is a hack.
          *
@@ -50,7 +78,7 @@ export const decorators = [
         });
 
         return (
-            <OverlayContextProvider responsiveRules={rRules}>
+            <OverlayContextProvider responsiveRules={getRRules(p.id)}>
                 <div className="story-wrap">
                     <Story />
                 </div>
