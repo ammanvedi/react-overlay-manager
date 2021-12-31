@@ -17,8 +17,6 @@
     "build-storybook": "export NODE_OPTIONS=--openssl-legacy-provider && build-storybook --output-dir docs"
   },
   "files": [
-    "src/**/*",
-    "!src/test**/*",
     "dist/**/*"
   ],
   "main": "./dist/index.js",
