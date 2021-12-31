@@ -16,7 +16,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: |
           echo "Running NPM Install"
-          npm install
+          npm ci
           echo "Running Tests"
           npm test
           echo "Building Library"
