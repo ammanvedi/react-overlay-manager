@@ -4,7 +4,6 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "jsx": "react",
-    "module": "CommonJS",
     "declaration": true,
     "declarationDir": "dist",
     "target": "es5",
