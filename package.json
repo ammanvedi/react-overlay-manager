@@ -20,8 +20,8 @@
     "!src/test**/*",
     "dist/**/*"
   ],
-  "main": "./dist/react-overlay-manager.js",
-  "types": "./dist/react-overlay-manager.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "devDependencies": {
     "@babel/core": "^7.16.0",
     "@storybook/addon-actions": "^6.4.9",

@@ -7,7 +7,7 @@ module.exports = {
     mode: 'production',
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'react-overlay-manager.js',
+        filename: 'index.js',
     },
     module: {
         rules: [
