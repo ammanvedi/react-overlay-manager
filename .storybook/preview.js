@@ -74,7 +74,9 @@ export const decorators = [
         const hideItems = ['[data-item-id="hidden-stories"]', '.search-field'];
         hideItems.map((i) => {
             const itm = window.parent.parent.document.querySelector(i);
-            itm.style.display = 'none';
+            if (itm) {
+                itm.style.display = 'none';
+            }
         });
 
         return (
