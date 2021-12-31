@@ -1,7 +1,15 @@
-ToDo
+# React Overlay Manager
 
-0. sort by priority and the timestamp of addition
-1. api for dismissing overlay
-2. api for overlay timeout
-3. api for notifying overlay is out of screen bounds
-4. set 
+React Overlay Manager is a set of React components for positioning floating overlays over your application
+in a declarative manner. It has the following features;
+
+1. Place overlays in a declarative manner in one of 8 positions
+2. Automatically avoid existing overlays
+3. Order overlays with priorities
+4. Avoid existing UI elements, for example navigation bars.
+5. Define rules for positioning overlay based on media queries
+6. Constraints on display for example limiting number of overlays in a certain position
+
+[See Full Documentation Here!](https://ammanvedi.github.io/react-overlay-manager/?path=/story/documentation-introduction--page)
+
+![](https://i.imgur.com/cykX35z.gif)
