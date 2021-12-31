@@ -2,6 +2,7 @@ import {
     ConstraintViolationCallback,
     InsetId,
     InsetRecord,
+    OverlayContextType,
     OverlayCreationRecord,
     OverlayId,
     OverlayLayoutStore,
@@ -9,24 +10,27 @@ import {
     OverlayRecord,
     OverlaySideInsetStore,
     OverlayStore,
+    PositionConstraintMaxItems,
+    PositionConstraints,
+    ResponsiveConstraints,
     ResponsiveRules,
+    ViolationReactionType,
 } from '../types';
 import {
     applyInsets,
-    evaluateConstraintsForPosition,
     getConfigForMatchMedia,
     getInsets,
     getNewInsetStore,
     getNewLayoutStore,
     getNewOverlayStore,
-    insertAtCorrectPosition,
+    getNOldestOverlays,
     removeOverlayFromList,
-} from '../helper/layout';
+} from './layout';
 import { BASE_LAYOUT, noop } from '../constants';
 import { OverlayDom } from './overlay-dom';
 import debounce from 'lodash/debounce';
-import { createScheduledFunction } from '../helper/scheduler';
-import { animateElementOut } from '../helper/dom';
+import { createScheduledFunction } from './scheduler';
+import { animateElementOut, insertAtCorrectPosition } from './dom';
 
 export class OverlayState {
     private creationCounter: number;
@@ -87,6 +91,7 @@ export class OverlayState {
         if (existingOverlay) {
             return existingOverlay.element;
         }
+
         /**
          * Each overlay is rendered into its own portal, this gives us the
          * flexibility to stay in react world but also to be able to render
@@ -97,7 +102,6 @@ export class OverlayState {
          * move it into another container for the purposes of styling and to keep
          * the DOM neat
          */
-
         const portalContainerForOverlay =
             this.overlayDom.createNewElementForOverlay(overlay.id);
 
@@ -190,132 +194,112 @@ export class OverlayState {
         }, overlay.hideAfterMs);
     }
 
-    public recalculateLayout = createScheduledFunction(
-        (() => {
-            let inCount = 0;
-            let outCount = 0;
+    public recalculateLayout = createScheduledFunction(() => {
+        let inCount = 0;
+        let outCount = 0;
 
-            const animationPromises: Array<Promise<void>> = [];
+        const animationPromises: Array<Promise<void>> = [];
 
-            this.layoutStore = this.overlayDom.putOverlaysInContainers(
-                this.overlayStore,
-                this.responsiveRules,
-                (id, position) => {
-                    const overlay = this.overlayStore.get(id);
+        this.layoutStore = this.overlayDom.putOverlaysInContainers(
+            this.overlayStore,
+            this.responsiveRules,
+            (id, position) => {
+                const overlay = this.overlayStore.get(id);
 
-                    if (!overlay) {
-                        return;
-                    }
+                if (!overlay) {
+                    return;
+                }
 
-                    overlay.position.desired = position;
+                overlay.position.desired = position;
 
-                    if (overlay.position.current === null) {
-                        this.overlayDom.addElementAtPosition(
-                            position,
-                            overlay.element,
-                        );
-                    }
+                if (overlay.position.current === null) {
+                    this.overlayDom.addElementAtPosition(
+                        position,
+                        overlay.element,
+                    );
+                }
 
-                    const mountPointChanged =
-                        overlay.position.current !== overlay.position.desired;
+                const mountPointChanged =
+                    overlay.position.current !== overlay.position.desired;
 
-                    /**
-                     * Element was not moved but we need to append it to make sure
-                     * the order is correct
-                     */
-                    if (!mountPointChanged) {
-                        this.overlayDom.addElementAtPosition(
-                            position,
-                            overlay.element,
-                        );
-                        return;
-                    }
+                /**
+                 * Element was not moved but we need to append it to make sure
+                 * the order is correct
+                 */
+                if (!mountPointChanged) {
+                    this.overlayDom.addElementAtPosition(
+                        position,
+                        overlay.element,
+                    );
+                    return;
+                }
 
-                    /**
-                     * Animate an element in that has not been added
-                     * to the dom yet
-                     */
-                    if (overlay.position.current === null) {
-                        // this.overlayDom.addElementAtPosition(
-                        //     position,
-                        //     overlay.element,
-                        // );
-
-                        inCount++;
-
-                        const animateInPromise = this.overlayDom
-                            .animateElementIn(
-                                overlay.element,
-                                position,
-                                inCount * 20,
-                            )
-                            .then(() => {
-                                overlay.position.current = position;
-                            });
-
-                        animationPromises.push(animateInPromise);
-                        return;
-                    }
-
-                    /**
-                     * Animate an element in that needs to be moved
-                     * from one container to another
-                     */
-
-                    const outInAnimation = this.overlayDom
-                        .animateElementOut(
-                            overlay.element,
-                            position,
-                            outCount * 20,
-                        )
-                        .then(() => {
-                            // TODO check if this works
-                            // const _overlay =
-                            //     overlayStore.current.get(id);
-                            //
-                            // if (!_overlay) {
-                            //     return;
-                            // }
-                            //
-                            // _overlay.position.current = position;
-
-                            const container =
-                                this.overlayDom.getContainerForPosition(
-                                    position,
-                                );
-
-                            if (!container) {
-                                return;
-                            }
-
-                            insertAtCorrectPosition(
-                                overlay.id,
-                                container,
-                                overlay.element,
-                                this.layoutStore.get(position) || [],
-                            );
-
-                            return this.overlayDom.animateElementIn(
-                                overlay.element,
-                                position,
-                                inCount * 20,
-                            );
-                        });
-
-                    animationPromises.push(outInAnimation);
+                /**
+                 * Animate an element in that has not been added
+                 * to the dom yet
+                 */
+                if (overlay.position.current === null) {
+                    // this.overlayDom.addElementAtPosition(
+                    //     position,
+                    //     overlay.element,
+                    // );
 
                     inCount++;
-                    outCount++;
-                },
-            );
 
-            return Promise.all([
-                ...animationPromises,
-                this.evaluateConstraints(),
-            ]);
-        }).bind(this),
-        500,
-    );
+                    const animateInPromise = this.overlayDom
+                        .animateElementIn(
+                            overlay.element,
+                            position,
+                            inCount * 20,
+                        )
+                        .then(() => {
+                            overlay.position.current = position;
+                        });
+
+                    animationPromises.push(animateInPromise);
+                    return;
+                }
+
+                /**
+                 * Animate an element in that needs to be moved
+                 * from one container to another
+                 */
+
+                const outInAnimation = this.overlayDom
+                    .animateElementOut(overlay.element, position, outCount * 20)
+                    .then(() => {
+                        overlay.position.current = position;
+
+                        const container =
+                            this.overlayDom.getContainerForPosition(position);
+
+                        if (!container) {
+                            return;
+                        }
+
+                        insertAtCorrectPosition(
+                            overlay.id,
+                            container,
+                            overlay.element,
+                            this.layoutStore.get(position) || [],
+                        );
+
+                        return this.overlayDom.animateElementIn(
+                            overlay.element,
+                            position,
+                            inCount * 20,
+                        );
+                    });
+
+                animationPromises.push(outInAnimation);
+
+                inCount++;
+                outCount++;
+            },
+        );
+
+        return Promise.all([...animationPromises, this.evaluateConstraints()]);
+    }, 500);
 
     private evaluateConstraints(): Promise<any> {
         return Promise.all(
@@ -340,13 +324,8 @@ export class OverlayState {
 
                 return [
                     ...acc,
-                    ...evaluateConstraintsForPosition(
+                    ...this.evaluateConstraintsForPosition(
                         pos,
-                        this.overlayStore,
-                        this.layoutStore,
-                        this.onConstraintViolation,
-                        container,
-                        this.removeOverlay.bind(this),
                         matchingConf.constraints,
                     ),
                 ];
@@ -354,8 +333,90 @@ export class OverlayState {
         );
     }
 
+    private evaluateConstraintsForPosition(
+        position: OverlayPosition,
+        constraints: ResponsiveConstraints['constraints'],
+    ): Array<Promise<void>> {
+        if (!constraints) {
+            return [];
+        }
+
+        const promises: Array<Promise<void>> = [];
+
+        for (let i = 0; i < constraints.length; i++) {
+            const constraint = constraints[i];
+
+            switch (constraint.type) {
+                case PositionConstraints.MAX_ITEMS:
+                    promises.push(
+                        ...this.handleMaxItemsConstraint(constraint, position),
+                    );
+            }
+        }
+
+        return promises;
+    }
+
     private getCreationOrderValue() {
         return ++this.creationCounter;
+    }
+
+    private handleMaxItemsConstraint(
+        constraint: PositionConstraintMaxItems,
+        position: OverlayPosition,
+    ): Array<Promise<void>> {
+        const overlaysInPosition = this.layoutStore.get(position);
+
+        if (!overlaysInPosition) {
+            return [];
+        }
+
+        if (overlaysInPosition.length <= constraint.max) {
+            return [];
+        }
+
+        const overlays = overlaysInPosition.map((o) =>
+            this.overlayStore.get(o),
+        ) as Array<OverlayRecord>;
+
+        const action = this.onConstraintViolation({
+            overlays,
+            violationPosition: position,
+        });
+
+        const overflowCount = overlaysInPosition.length - constraint.max;
+
+        switch (action.type) {
+            case ViolationReactionType.NO_ACTION:
+                return [];
+            case ViolationReactionType.REMOVE_IDS:
+                return action.ids.map((id) => {
+                    const cb =
+                        this.overlayStore.get(
+                            id,
+                        )?.onRemovedAfterConstraintViolation;
+
+                    return this.removeOverlay(id).then(() => {
+                        if (cb) {
+                            cb(id);
+                        }
+                    });
+                });
+            case ViolationReactionType.REMOVE_OLDEST_AUTO:
+                return getNOldestOverlays(overlays, overflowCount).map((o) => {
+                    const cb = this.overlayStore.get(
+                        o.id,
+                    )?.onRemovedAfterConstraintViolation;
+
+                    return this.removeOverlay(o.id).then(() => {
+                        if (cb) {
+                            cb(o.id);
+                        }
+                    });
+                });
+            default:
+                return [];
+        }
     }
 
     public recalculateInsets = debounce(

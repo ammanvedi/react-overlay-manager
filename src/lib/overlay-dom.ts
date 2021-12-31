@@ -6,7 +6,7 @@ import {
     createElementWithInnerHTML,
     getFinalWidth,
     getWidthReference,
-} from '../helper/dom';
+} from './dom';
 import { BASE_LAYOUT, ID_MAP } from '../constants';
 import {
     OverlayId,
@@ -19,7 +19,7 @@ import {
     addToLayoutStore,
     getConfigForMatchMedia,
     getNewLayoutStore,
-} from '../helper/layout';
+} from './layout';
 
 export class OverlayDom {
     private readonly rootElement: HTMLElement;

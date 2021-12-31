@@ -1,5 +1,4 @@
-import { OverlayPosition, OverlayRecord } from '../types';
-import { ID_MAP } from '../constants';
+import { OverlayId, OverlayPosition } from '../types';
 
 export const createElementWithId = <T extends keyof HTMLElementTagNameMap>(
     tagName: T,
@@ -9,11 +8,6 @@ export const createElementWithId = <T extends keyof HTMLElementTagNameMap>(
     const el = document.createElement(tagName);
     el.setAttribute('id', id);
     el.setAttribute('class', className || '');
-    return el;
-};
-
-export const addStyles = <T extends HTMLElement>(el: T, styles: string): T => {
-    el.setAttribute('style', styles);
     return el;
 };
 
@@ -28,12 +22,6 @@ export const createElementWithInnerHTML = <
     el.innerHTML = innerHTML;
 
     return el;
-};
-
-export const getContainerForPosition = (
-    position: OverlayPosition,
-): HTMLElement | null => {
-    return document.getElementById(ID_MAP[position]);
 };
 
 export const addToBodyAndRemoveOld = <T extends HTMLElement>(
@@ -225,4 +213,24 @@ export const getFullHeightAndWidthOfElement = (
         width: baseWidth + parseInt(marginLeft) + parseInt(marginRight),
         height: baseHeight + parseInt(marginTop) + parseInt(marginBottom),
     };
+};
+export const insertAtCorrectPosition = (
+    id: OverlayId,
+    container: HTMLElement,
+    element: HTMLElement,
+    desiredOrder: Array<OverlayId>,
+) => {
+    const index = desiredOrder.findIndex((orderedId) => orderedId === id);
+    if (index === -1) {
+        return;
+    }
+
+    if (index === desiredOrder.length - 1) {
+        container.appendChild(element);
+        return;
+    }
+
+    const nextId = desiredOrder[index + 1];
+
+    container.insertBefore(element, container.querySelector(`#${nextId}`));
 };

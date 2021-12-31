@@ -1,4 +1,4 @@
-import { css } from './styles';
+import { css } from './lib/styles';
 import {
     ConstraintViolationCallback,
     OverlayPosition,
@@ -6,7 +6,6 @@ import {
     ViolationReactionType,
 } from './types';
 
-export const DATA_MOUNTED = 'data-mounted';
 export const DEFAULT_PORTAL_WRAPPER_ID = 'rom-portal';
 export const ID_MAP: Record<OverlayPosition | 'container', string> = {
     [OverlayPosition.TOP_CENTER]: `${DEFAULT_PORTAL_WRAPPER_ID}_top_center`,
