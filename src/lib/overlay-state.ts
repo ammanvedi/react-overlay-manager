@@ -419,19 +419,14 @@ export class OverlayState {
         }
     }
 
-    public recalculateInsets = debounce(
-        () => {
-            const { container } = this.overlayDom.getContainers();
+    public recalculateInsets = createScheduledFunction(() => {
+        const { container } = this.overlayDom.getContainers();
 
-            if (container) {
-                const newInsets = getInsets(this.insetStore);
-                applyInsets(container, newInsets);
-            }
-        },
-        300,
-        {
-            leading: true,
-            trailing: true,
-        },
-    );
+        if (container) {
+            const newInsets = getInsets(this.insetStore);
+            applyInsets(container, newInsets);
+        }
+
+        return Promise.resolve();
+    }, 300);
 }
