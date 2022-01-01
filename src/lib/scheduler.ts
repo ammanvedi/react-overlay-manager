@@ -7,7 +7,8 @@ type PlaceholderPromise<T> = {
 
 /**
  * Create a promise that will resolve when a promise that you
- * dont have yet resolves
+ * dont have yet resolves, basically just provide a way to get the
+ * resolve function outside of the promise
  */
 export const createPlaceholderPromise = <T>(): PlaceholderPromise<T> => {
     return (() => {
