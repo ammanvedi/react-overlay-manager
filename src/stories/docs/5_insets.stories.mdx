@@ -20,6 +20,24 @@ to any of the 4 sides of the screen viewport using the OverlaySide enum;
 
 <img width="600px" style={{margin: '0 auto', display: 'block'}} src="https://i.imgur.com/qf32Jnf.png" />
 
+Insets can be defined as ref's to html elements or plain numbers. You can also add multiple
+insets to each side.
+
+The logic for combining insets is the following
+
+```txt dark="true"
+1. Sum all numbered inputs as N
+2. From all ref insets pick the one that returns the largest value (inclusive of extra padding) as R
+3. Return Math.max(R, N)
+```
+
+Here is an example;
+
+<img width="600px" style={{margin: '0 auto', display: 'block'}} src="https://i.imgur.com/q0Y2jan.png" />
+
+
+As you can see the larger of the two, the ref in this case will be chosen;
+
 The overlay will avoid the navigation bar and will recalculate the
 inset on scroll. There is a bit of effort needed to achieve this as
 can be seen in the example code
@@ -89,3 +107,4 @@ const InsetExample = () => {
     )
 }
 ```
+

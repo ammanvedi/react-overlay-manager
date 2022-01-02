@@ -5,6 +5,25 @@ export interface InsetRect {
     [OverlaySide.RIGHT]: number;
 }
 
+export interface InsetRectCalculation {
+    [OverlaySide.TOP]: {
+        numeric: number;
+        ref: number;
+    };
+    [OverlaySide.BOTTOM]: {
+        numeric: number;
+        ref: number;
+    };
+    [OverlaySide.LEFT]: {
+        numeric: number;
+        ref: number;
+    };
+    [OverlaySide.RIGHT]: {
+        numeric: number;
+        ref: number;
+    };
+}
+
 export interface SafeAreaRect {
     inset: InsetRect;
 }

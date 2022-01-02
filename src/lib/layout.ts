@@ -1,5 +1,6 @@
 import {
     InsetRect,
+    InsetRectCalculation,
     MatchMediaRecord,
     OverlayId,
     OverlayLayoutStore,
@@ -24,15 +25,20 @@ export const insertOverlayIntoList = (
     list: Array<OverlayId>,
     overlays: OverlayStore,
 ): Array<OverlayId> => {
-    for (let i = 0; i < list.length; i++) {
-        const el = overlays.get(list[i]);
+    return [...list, overlay.id].sort((a, b) => {
+        const overlayA = overlays.get(a);
+        const overlayB = overlays.get(b);
 
-        if (el && el.priority >= overlay.priority) {
-            return [...list.slice(0, i), overlay.id, ...list.slice(i)];
+        if (!overlayA || !overlayB) {
+            return 0;
         }
-    }
 
-    return [...list, overlay.id];
+        if (overlayA.priority === overlayB.priority) {
+            return overlayB.createdAt - overlayA.createdAt;
+        }
+
+        return overlayA.priority - overlayB.priority;
+    });
 };
 
 export const removeOverlayFromList = (
@@ -130,29 +136,62 @@ export const getInsetFromRef = (
 };
 
 export const getInsets = (insetStore: OverlaySideInsetStore): InsetRect => {
-    const result: InsetRect = {
-        [OverlaySide.TOP]: 0,
-        [OverlaySide.BOTTOM]: 0,
-        [OverlaySide.LEFT]: 0,
-        [OverlaySide.RIGHT]: 0,
+    const result: InsetRectCalculation = {
+        [OverlaySide.TOP]: {
+            numeric: 0,
+            ref: 0,
+        },
+        [OverlaySide.BOTTOM]: {
+            numeric: 0,
+            ref: 0,
+        },
+        [OverlaySide.LEFT]: {
+            numeric: 0,
+            ref: 0,
+        },
+        [OverlaySide.RIGHT]: {
+            numeric: 0,
+            ref: 0,
+        },
     };
 
     for (const [
         _,
         { insetValue, side, extraPaddingPx },
     ] of insetStore.entries()) {
+        let thisInset = 0;
         switch (typeof insetValue) {
             case 'number':
-                result[side] += insetValue + extraPaddingPx;
+                result[side].numeric += insetValue + extraPaddingPx;
                 break;
             case 'object':
-                result[side] += insetValue
+                thisInset = insetValue
                     ? getInsetFromRef(insetValue, side, extraPaddingPx)
                     : 0;
+                if (thisInset > result[side].ref) {
+                    result[side].ref = thisInset;
+                }
         }
     }
 
-    return result;
+    return {
+        [OverlaySide.TOP]: Math.max(
+            result[OverlaySide.TOP].ref,
+            result[OverlaySide.TOP].numeric,
+        ),
+        [OverlaySide.BOTTOM]: Math.max(
+            result[OverlaySide.BOTTOM].ref,
+            result[OverlaySide.BOTTOM].numeric,
+        ),
+        [OverlaySide.LEFT]: Math.max(
+            result[OverlaySide.LEFT].ref,
+            result[OverlaySide.LEFT].numeric,
+        ),
+        [OverlaySide.RIGHT]: Math.max(
+            result[OverlaySide.RIGHT].ref,
+            result[OverlaySide.RIGHT].numeric,
+        ),
+    };
 };
 
 export const applyInsets = (el: HTMLElement, insets: InsetRect) => {
@@ -161,29 +200,15 @@ export const applyInsets = (el: HTMLElement, insets: InsetRect) => {
     }px ${insets[OverlaySide.BOTTOM]}px ${insets[OverlaySide.LEFT]}px`;
 };
 
-export const getOldestOverlay = (
-    overlays: Array<OverlayRecord>,
-): OverlayRecord => {
-    let oVal = Infinity;
-    let oIndex = 0;
-
-    for (let i = 0; i < overlays.length; i++) {
-        const o = overlays[i];
-
-        if (o.createdAt < oVal) {
-            oVal = o.createdAt;
-            oIndex = i;
-        }
-    }
-
-    return overlays[oIndex];
-};
-
 export const getNOldestOverlays = (
     overlays: Array<OverlayRecord>,
     n: number,
 ): Array<OverlayRecord> => {
-    const sorted = overlays.sort((a, b) => {
+    if (overlays.length <= n) {
+        return [...overlays];
+    }
+
+    const sorted = [...overlays].sort((a, b) => {
         return a.createdAt - b.createdAt;
     });
     return sorted.slice(0, n);

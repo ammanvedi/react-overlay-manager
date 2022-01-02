@@ -2,7 +2,6 @@ import {
     ConstraintViolationCallback,
     InsetId,
     InsetRecord,
-    OverlayContextType,
     OverlayCreationRecord,
     OverlayId,
     OverlayLayoutStore,
@@ -28,9 +27,8 @@ import {
 } from './layout';
 import { BASE_LAYOUT, noop } from '../constants';
 import { OverlayDom } from './overlay-dom';
-import debounce from 'lodash/debounce';
 import { createScheduledFunction } from './scheduler';
-import { animateElementOut, insertAtCorrectPosition } from './dom';
+import { insertAtCorrectPosition } from './dom';
 
 export class OverlayState {
     private creationCounter: number;
@@ -239,11 +237,6 @@ export class OverlayState {
                  * to the dom yet
                  */
                 if (overlay.position.current === null) {
-                    // this.overlayDom.addElementAtPosition(
-                    //     position,
-                    //     overlay.element,
-                    // );
-
                     inCount++;
 
                     const animateInPromise = this.overlayDom

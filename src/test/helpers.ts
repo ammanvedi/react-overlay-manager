@@ -1,3 +1,5 @@
+import { OverlayPosition, OverlayRecord } from '../types';
+
 export const DEFAULT_DOM_RECT: Omit<DOMRect, 'toJSON'> = {
     height: 0,
     width: 0,
@@ -20,3 +22,20 @@ export const createMockDomElement = <T extends keyof HTMLElementTagNameMap>(
 
     return el as HTMLElementTagNameMap[T];
 };
+
+export const createMockOverlayRecord = (
+    record: Partial<OverlayRecord>,
+): OverlayRecord => ({
+    id: 'a',
+    element: document.createElement('div'),
+    position: {
+        current: OverlayPosition.BOTTOM_FULL_WIDTH,
+        desired: OverlayPosition.BOTTOM_FULL_WIDTH,
+        original:
+            OverlayPosition.BOTTOM_FULL_WIDTH as Readonly<OverlayPosition>,
+    },
+    createdAt: 1,
+    onRemovedAfterConstraintViolation: jest.fn(),
+    priority: 1,
+    ...record,
+});
