@@ -11,7 +11,7 @@ React Overlay Manager is a set of React components for positioning floating over
 in a declarative manner. It has the following features;
 
 1. Place overlays in a declarative manner in one of 8 positions
-2. Automatically avoid existing overlays
+2. Automatically stack overlays
 3. Order overlays with priorities
 4. Avoid existing UI elements, for example navigation bars.
 5. Define rules for positioning overlay based on media queries
