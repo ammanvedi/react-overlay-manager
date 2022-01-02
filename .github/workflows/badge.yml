@@ -5,7 +5,7 @@ on:
       - master
 
 jobs:
-  Release-To-NPM:
+  Coverage:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
