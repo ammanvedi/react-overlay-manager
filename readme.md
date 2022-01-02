@@ -3,7 +3,7 @@
 [![codecov](https://codecov.io/gh/ammanvedi/react-overlay-manager/branch/master/graph/badge.svg?token=FMZZ527BNG)](https://codecov.io/gh/ammanvedi/react-overlay-manager)
 [![](https://img.shields.io/badge/%F0%9F%93%96-Documentation-blue)](https://ammanvedi.github.io/react-overlay-manager/?path=/story/documentation-introduction--page)
 ![ts](https://img.shields.io/github/languages/top/ammanvedi/react-overlay-manager)
-
+![](https://img.shields.io/npm/dw/react-overlay-manager)
 
 React Overlay Manager is a set of React components for positioning floating overlays over your application
 in a declarative manner. It has the following features;
