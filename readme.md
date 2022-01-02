@@ -5,6 +5,7 @@
 ![ts](https://img.shields.io/github/languages/top/ammanvedi/react-overlay-manager)
 [![](https://img.shields.io/npm/dw/react-overlay-manager)](https://www.npmjs.com/package/react-overlay-manager)
 [![](https://img.shields.io/npm/l/react-overlay-manager)](https://www.npmjs.com/package/react-overlay-manager)
+[![](https://img.shields.io/bundlephobia/minzip/react-overlay-manager)](https://bundlephobia.com/package/react-overlay-manager@2.0.6)
 
 React Overlay Manager is a set of React components for positioning floating overlays over your application
 in a declarative manner. It has the following features;
