@@ -1,0 +1,23 @@
+name: Release
+on:
+  push:
+    branches:
+      - *
+
+jobs:
+  Release-To-NPM:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install & Test
+        uses: actions/setup-node@v2
+        run: |
+          npm ci
+          npm test -- --coverage
+
+      - name: Coverage
+      - uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

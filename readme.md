@@ -1,4 +1,6 @@
 # React Overlay Manager
+[![npm version](https://badge.fury.io/js/react-overlay-manager.svg)](https://badge.fury.io/js/react-overlay-manager)
+
 
 React Overlay Manager is a set of React components for positioning floating overlays over your application
 in a declarative manner. It has the following features;
