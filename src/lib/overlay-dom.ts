@@ -34,7 +34,6 @@ export class OverlayDom {
         this.baseLayout = baseLayout;
         this.baseTagName = baseTagName;
         this.rootElement = this.createNewRootElement();
-        this.createNewRootElement();
     }
 
     private getContainerElement(): HTMLElement | null {

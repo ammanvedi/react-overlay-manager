@@ -1,5 +1,14 @@
-import { OverlaySide, OverlaySideInsetStore } from '../types';
-import { createMockDomElement, DEFAULT_DOM_RECT } from './helpers';
+import {
+    OverlayPosition,
+    OverlaySide,
+    OverlaySideInsetStore,
+    OverlayStore,
+} from '../types';
+import {
+    createMockDomElement,
+    createMockOverlayRecord,
+    DEFAULT_DOM_RECT,
+} from './helpers';
 
 export const mockInsetStoreNumericGreater: OverlaySideInsetStore = new Map([
     [
@@ -94,5 +103,96 @@ export const mockInsetStoreRefGreater: OverlaySideInsetStore = new Map([
             side: OverlaySide.LEFT,
             extraPaddingPx: 16,
         },
+    ],
+]);
+
+export const mockOverlayStoreOneInEachPosition: OverlayStore = new Map([
+    [
+        'a',
+        createMockOverlayRecord({
+            id: 'a',
+            position: {
+                original: OverlayPosition.TOP_FULL_WIDTH,
+                desired: OverlayPosition.TOP_FULL_WIDTH,
+                current: OverlayPosition.TOP_FULL_WIDTH,
+            },
+        }),
+    ],
+    [
+        'b',
+        createMockOverlayRecord({
+            id: 'b',
+            position: {
+                original: OverlayPosition.BOTTOM_FULL_WIDTH,
+                desired: OverlayPosition.BOTTOM_FULL_WIDTH,
+                current: OverlayPosition.BOTTOM_FULL_WIDTH,
+            },
+        }),
+    ],
+    [
+        'c',
+        createMockOverlayRecord({
+            id: 'c',
+            position: {
+                original: OverlayPosition.TOP_LEFT,
+                desired: OverlayPosition.TOP_LEFT,
+                current: OverlayPosition.TOP_LEFT,
+            },
+        }),
+    ],
+    [
+        'd',
+        createMockOverlayRecord({
+            id: 'd',
+            position: {
+                original: OverlayPosition.TOP_CENTER,
+                desired: OverlayPosition.TOP_CENTER,
+                current: OverlayPosition.TOP_CENTER,
+            },
+        }),
+    ],
+    [
+        'e',
+        createMockOverlayRecord({
+            id: 'e',
+            position: {
+                original: OverlayPosition.TOP_RIGHT,
+                desired: OverlayPosition.TOP_RIGHT,
+                current: OverlayPosition.TOP_RIGHT,
+            },
+        }),
+    ],
+    [
+        'f',
+        createMockOverlayRecord({
+            id: 'f',
+            position: {
+                original: OverlayPosition.BOTTOM_LEFT,
+                desired: OverlayPosition.BOTTOM_LEFT,
+                current: OverlayPosition.BOTTOM_LEFT,
+            },
+        }),
+    ],
+    [
+        'g',
+        createMockOverlayRecord({
+            id: 'g',
+            position: {
+                original: OverlayPosition.BOTTOM_CENTER,
+                desired: OverlayPosition.BOTTOM_CENTER,
+                current: OverlayPosition.BOTTOM_CENTER,
+            },
+        }),
+    ],
+    [
+        'h',
+        createMockOverlayRecord({
+            id: 'h',
+            position: {
+                original: OverlayPosition.BOTTOM_RIGHT,
+                desired: OverlayPosition.BOTTOM_RIGHT,
+                current: OverlayPosition.BOTTOM_RIGHT,
+            },
+        }),
     ],
 ]);

@@ -38,11 +38,11 @@ export class OverlayState {
     private overlayDom: OverlayDom;
 
     constructor(
-        private rootId: string,
-        private responsiveRules: ResponsiveRules,
-        private onConstraintViolation: ConstraintViolationCallback,
-        private baseLayout: string = BASE_LAYOUT,
-        private baseTagName: keyof HTMLElementTagNameMap = 'div',
+        private readonly rootId: string,
+        private readonly responsiveRules: ResponsiveRules,
+        private readonly onConstraintViolation: ConstraintViolationCallback,
+        private readonly baseLayout: string = BASE_LAYOUT,
+        private readonly baseTagName: keyof HTMLElementTagNameMap = 'div',
     ) {
         this.responsiveRules = responsiveRules;
         this.rootId = rootId;
@@ -122,25 +122,28 @@ export class OverlayState {
     public unregisterOverlay(id: OverlayId) {
         const overlay = this.getOverlay(id);
 
-        if (!overlay || !overlay.position.current) {
+        if (!overlay) {
             return;
         }
 
-        const currentOverlaysInPosition = this.layoutStore.get(
-            overlay.position.current,
-        );
+        if (overlay.position.current) {
+            const currentOverlaysInPosition = this.layoutStore.get(
+                overlay.position.current,
+            );
 
-        if (!currentOverlaysInPosition) {
-            return;
+            if (!currentOverlaysInPosition) {
+                return;
+            }
+
+            const newOverlayList = removeOverlayFromList(
+                id,
+                currentOverlaysInPosition,
+                this.overlayStore,
+            );
+
+            this.layoutStore.set(overlay.position.current, newOverlayList);
         }
 
-        const newOverlayList = removeOverlayFromList(
-            id,
-            currentOverlaysInPosition,
-            this.overlayStore,
-        );
-
-        this.layoutStore.set(overlay.position.current, newOverlayList);
         this.overlayStore.delete(id);
     }
 
@@ -294,6 +297,17 @@ export class OverlayState {
         return Promise.all([...animationPromises, this.evaluateConstraints()]);
     }, 500);
 
+    public recalculateInsets = createScheduledFunction(() => {
+        const { container } = this.overlayDom.getContainers();
+
+        if (container) {
+            const newInsets = getInsets(this.insetStore);
+            applyInsets(container, newInsets);
+        }
+
+        return Promise.resolve();
+    }, 300);
+
     private evaluateConstraints(): Promise<any> {
         return Promise.all(
             Object.values(OverlayPosition).reduce((acc, pos) => {
@@ -411,15 +425,4 @@ export class OverlayState {
                 return [];
         }
     }
-
-    public recalculateInsets = createScheduledFunction(() => {
-        const { container } = this.overlayDom.getContainers();
-
-        if (container) {
-            const newInsets = getInsets(this.insetStore);
-            applyInsets(container, newInsets);
-        }
-
-        return Promise.resolve();
-    }, 300);
 }

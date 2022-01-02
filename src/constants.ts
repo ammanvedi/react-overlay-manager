@@ -7,17 +7,19 @@ import {
 } from './types';
 
 export const DEFAULT_PORTAL_WRAPPER_ID = 'rom-portal';
-export const ID_MAP: Record<OverlayPosition | 'container', string> = {
-    [OverlayPosition.TOP_CENTER]: `${DEFAULT_PORTAL_WRAPPER_ID}_top_center`,
-    [OverlayPosition.TOP_FULL_WIDTH]: `${DEFAULT_PORTAL_WRAPPER_ID}_top_full_width`,
-    [OverlayPosition.TOP_LEFT]: `${DEFAULT_PORTAL_WRAPPER_ID}_top_left`,
-    [OverlayPosition.TOP_RIGHT]: `${DEFAULT_PORTAL_WRAPPER_ID}_top_right`,
-    [OverlayPosition.BOTTOM_CENTER]: `${DEFAULT_PORTAL_WRAPPER_ID}_bottom_center`,
-    [OverlayPosition.BOTTOM_FULL_WIDTH]: `${DEFAULT_PORTAL_WRAPPER_ID}_bottom_full_width`,
-    [OverlayPosition.BOTTOM_LEFT]: `${DEFAULT_PORTAL_WRAPPER_ID}_bottom_left`,
-    [OverlayPosition.BOTTOM_RIGHT]: `${DEFAULT_PORTAL_WRAPPER_ID}_bottom_right`,
-    container: `${DEFAULT_PORTAL_WRAPPER_ID}_container`,
-};
+export const ID_MAP: Record<OverlayPosition | 'container' | 'styles', string> =
+    {
+        [OverlayPosition.TOP_CENTER]: `${DEFAULT_PORTAL_WRAPPER_ID}_top_center`,
+        [OverlayPosition.TOP_FULL_WIDTH]: `${DEFAULT_PORTAL_WRAPPER_ID}_top_full_width`,
+        [OverlayPosition.TOP_LEFT]: `${DEFAULT_PORTAL_WRAPPER_ID}_top_left`,
+        [OverlayPosition.TOP_RIGHT]: `${DEFAULT_PORTAL_WRAPPER_ID}_top_right`,
+        [OverlayPosition.BOTTOM_CENTER]: `${DEFAULT_PORTAL_WRAPPER_ID}_bottom_center`,
+        [OverlayPosition.BOTTOM_FULL_WIDTH]: `${DEFAULT_PORTAL_WRAPPER_ID}_bottom_full_width`,
+        [OverlayPosition.BOTTOM_LEFT]: `${DEFAULT_PORTAL_WRAPPER_ID}_bottom_left`,
+        [OverlayPosition.BOTTOM_RIGHT]: `${DEFAULT_PORTAL_WRAPPER_ID}_bottom_right`,
+        container: `${DEFAULT_PORTAL_WRAPPER_ID}_container`,
+        styles: `${DEFAULT_PORTAL_WRAPPER_ID}_styles`,
+    };
 
 export const DEFAULT_PORTAL_WRAPPER_TAG: keyof HTMLElementTagNameMap = 'div';
 
@@ -108,7 +110,7 @@ export const BASE_CSS = css`
 
 export const BASE_LAYOUT = `
     <div class="overlay" id="${ID_MAP.container}">
-        <style>${BASE_CSS}</style>
+        <style id="${ID_MAP.styles}">${BASE_CSS}</style>
         <div class="wrapper wrapper--top">
           <div class="full" id="${ID_MAP.TOP_FULL_WIDTH}">
           </div>
