@@ -11,8 +11,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install & Test
+      - name: Setp Node
         uses: actions/setup-node@v2
+
+      - name: Install & Test
         run: |
           npm ci
           npm test -- --coverage
