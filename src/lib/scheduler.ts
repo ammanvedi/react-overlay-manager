@@ -1,40 +1,3 @@
-type ResolveFn<T> = (value: T | PromiseLike<T>) => void;
-
-type PlaceholderPromise<T> = {
-    placeholderPromise: Promise<T>;
-    setResolutionPromise: (p: Promise<T>) => void;
-};
-
-/**
- * Create a promise that will resolve when a promise that you
- * dont have yet resolves, basically just provide a way to get the
- * resolve function outside of the promise
- */
-export const createPlaceholderPromise = <T>(): PlaceholderPromise<T> => {
-    return (() => {
-        let resolveFn: ResolveFn<T> | null = null;
-
-        const placeholderPromise = new Promise<T>((res, rej) => {
-            resolveFn = res;
-        });
-
-        const setResolutionPromise = (promise: Promise<T>) => {
-            promise.then((v) => {
-                if (resolveFn) {
-                    resolveFn(v);
-                }
-
-                return v;
-            });
-        };
-
-        return {
-            placeholderPromise: placeholderPromise,
-            setResolutionPromise,
-        };
-    })();
-};
-
 /**
  * The goal of the scheduler is to
  *
@@ -75,7 +38,7 @@ export const createScheduledFunction = <
          * these operations has completed
          */
         let blockState: number = TIMER_AND_PROMISE_SETTLED;
-        let placeholder: PlaceholderPromise<V> | null = null;
+        let currentExecution: Promise<V> | null = null;
 
         const tryScheduleNextInvocation = () => {
             blockState += 1;
@@ -95,18 +58,14 @@ export const createScheduledFunction = <
         };
 
         const _internal = (...args: A): Promise<V> => {
-            if (blockState !== TIMER_AND_PROMISE_SETTLED) {
+            if (blockState !== TIMER_AND_PROMISE_SETTLED && currentExecution) {
                 /**
                  * In the use case hen re we dont actually need to worry about the
                  * return value of the function because we are
                  */
                 lastBlockedArgs = args;
 
-                if (!placeholder) {
-                    placeholder = createPlaceholderPromise<V>();
-                }
-
-                return placeholder.placeholderPromise;
+                return currentExecution;
             }
 
             blockState = BLOCKED;
@@ -115,25 +74,13 @@ export const createScheduledFunction = <
                 tryScheduleNextInvocation();
             }, callOnceEveryMs);
 
-            const resultPromise = fn(...args).then((res) => {
+            currentExecution = fn(...args).then((res) => {
                 tryScheduleNextInvocation();
-                placeholder = null;
+                currentExecution = null;
                 return res;
             });
 
-            /**
-             * We are wrapping functions that return promises, however we wrap
-             * them in a function that might not actually call the desired function
-             * for a while. So we returned the placeholder promise earlier.
-             *
-             * Now we have invoked the function we can resolve the placeholder
-             * promise with the actual promise.
-             */
-            if (placeholder) {
-                placeholder.setResolutionPromise(resultPromise);
-            }
-
-            return resultPromise;
+            return currentExecution;
         };
 
         return _internal;
